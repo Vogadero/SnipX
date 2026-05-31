@@ -1,0 +1,51 @@
+# 编译输出
+bin/
+obj/
+build/
+release/
+*.exe
+*.obj
+*.o
+*.res
+
+# 压缩包
+*.zip
+*.7z
+*.rar
+
+# 安装程序
+*-Setup.exe
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.opendb
+*.vcxproj.filters
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+
+# 日志和临时文件
+*.log
+*.tmp
+~*
+*.swp
+*.bak
+
+# 操作系统
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*

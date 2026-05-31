@@ -1,0 +1,116 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup MSVC
+      uses: microsoft/setup-msbuild@v1.1
+    
+    - name: Build with MSVC
+      run: |
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        build.bat
+      shell: cmd
+    
+    - name: Get version
+      id: get_version
+      run: |
+        echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      shell: bash
+    
+    - name: Create release directory
+      run: |
+        mkdir release
+        mkdir release\SnipX-${{ steps.get_version.outputs.VERSION }}
+        copy bin\SnipX.exe release\SnipX-${{ steps.get_version.outputs.VERSION }}\
+        copy README.md release\SnipX-${{ steps.get_version.outputs.VERSION }}\
+        copy USER_MANUAL.md release\SnipX-${{ steps.get_version.outputs.VERSION }}\用户手册.md
+        copy CHANGELOG.md release\SnipX-${{ steps.get_version.outputs.VERSION }}\更新日志.md
+      shell: cmd
+    
+    - name: Download UPX
+      run: |
+        curl -L https://github.com/upx/upx/releases/download/v4.2.1/upx-4.2.1-win64.zip -o upx.zip
+        7z x upx.zip
+        move upx-4.2.1-win64\upx.exe .
+      shell: cmd
+    
+    - name: Compress with UPX
+      run: |
+        upx --best --lzma release\SnipX-${{ steps.get_version.outputs.VERSION }}\SnipX.exe
+      shell: cmd
+      continue-on-error: true
+    
+    - name: Create ZIP archive
+      run: |
+        cd release
+        7z a -tzip SnipX-${{ steps.get_version.outputs.VERSION }}.zip SnipX-${{ steps.get_version.outputs.VERSION }}\*
+      shell: cmd
+    
+    - name: Get file size
+      id: file_size
+      run: |
+        $size = (Get-Item "release\SnipX-${{ steps.get_version.outputs.VERSION }}\SnipX.exe").Length
+        $sizeKB = [math]::Round($size / 1KB, 2)
+        echo "SIZE_KB=$sizeKB" >> $env:GITHUB_OUTPUT
+      shell: pwsh
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          release/SnipX-${{ steps.get_version.outputs.VERSION }}.zip
+          release/SnipX-${{ steps.get_version.outputs.VERSION }}/SnipX.exe
+        body: |
+          ## SnipX v${{ steps.get_version.outputs.VERSION }}
+          
+          极致轻量的 Windows 截图工具
+          
+          ### 📦 文件信息
+          - **文件大小**: ${{ steps.file_size.outputs.SIZE_KB }} KB
+          - **系统要求**: Windows 7 或更高版本
+          - **无需安装**: 解压即用
+          
+          ### ✨ 功能特性
+          - 区域截图、全屏截图、窗口截图
+          - 8 种标注工具（矩形、椭圆、箭头、铅笔、文字、直线、马赛克、模糊）
+          - 取色器（RGB/HSL/HEX）
+          - 贴图功能
+          - 多格式保存（PNG/JPG/BMP）
+          - 屏幕录制和 GIF 导出
+          - 多语言支持
+          
+          ### 📥 下载说明
+          - **SnipX.exe**: 单文件版本，直接运行
+          - **SnipX-${{ steps.get_version.outputs.VERSION }}.zip**: 完整包，包含文档
+          
+          ### 📖 使用方法
+          1. 下载 SnipX.exe
+          2. 双击运行
+          3. 按 F1 或 Ctrl+Alt+A 开始截图
+          
+          详细使用说明请查看[用户手册](https://github.com/${{ github.repository }}/blob/main/USER_MANUAL.md)
+          
+          ### 🔄 更新日志
+          查看 [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: SnipX-${{ steps.get_version.outputs.VERSION }}
+        path: release/SnipX-${{ steps.get_version.outputs.VERSION }}/

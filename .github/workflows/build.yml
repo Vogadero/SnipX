@@ -1,0 +1,227 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  build-msvc:
+    name: Build with MSVC
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup MSVC
+      uses: microsoft/setup-msbuild@v1.1
+    
+    - name: Build with MSVC
+      run: |
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        build.bat
+      shell: cmd
+    
+    - name: Check build output
+      run: |
+        if not exist "bin\SnipX.exe" (
+          echo Build failed: SnipX.exe not found
+          exit /b 1
+        )
+        echo Build successful
+      shell: cmd
+    
+    - name: Get file size
+      id: file_size
+      run: |
+        $size = (Get-Item "bin\SnipX.exe").Length
+        $sizeKB = [math]::Round($size / 1KB, 2)
+        $sizeMB = [math]::Round($size / 1MB, 2)
+        echo "SIZE_KB=$sizeKB" >> $env:GITHUB_OUTPUT
+        echo "SIZE_MB=$sizeMB" >> $env:GITHUB_OUTPUT
+        echo "File size: $sizeKB KB ($sizeMB MB)"
+      shell: pwsh
+    
+    - name: Check file size
+      run: |
+        if [ "${{ steps.file_size.outputs.SIZE_MB }}" -gt "1" ]; then
+          echo "Warning: File size exceeds 1MB target"
+        else
+          echo "File size is within target"
+        fi
+      shell: bash
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: SnipX-MSVC
+        path: bin/SnipX.exe
+        retention-days: 7
+  
+  build-mingw:
+    name: Build with MinGW
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup MinGW
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: true
+        install: >-
+          mingw-w64-x86_64-gcc
+          mingw-w64-x86_64-make
+    
+    - name: Build with MinGW
+      shell: msys2 {0}
+      run: |
+        cd $GITHUB_WORKSPACE
+        ./build.bat
+    
+    - name: Check build output
+      run: |
+        if not exist "bin\SnipX.exe" (
+          echo Build failed: SnipX.exe not found
+          exit /b 1
+        )
+        echo Build successful
+      shell: cmd
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: SnipX-MinGW
+        path: bin/SnipX.exe
+        retention-days: 7
+  
+  build-cmake:
+    name: Build with CMake
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup MSVC
+      uses: microsoft/setup-msbuild@v1.1
+    
+    - name: Configure CMake
+      run: |
+        mkdir build
+        cd build
+        cmake .. -G "Visual Studio 17 2022" -A x64
+    
+    - name: Build with CMake
+      run: |
+        cd build
+        cmake --build . --config Release
+    
+    - name: Check build output
+      run: |
+        if not exist "build\bin\Release\SnipX.exe" (
+          echo Build failed: SnipX.exe not found
+          exit /b 1
+        )
+        echo Build successful
+      shell: cmd
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: SnipX-CMake
+        path: build/bin/Release/SnipX.exe
+        retention-days: 7
+  
+  code-quality:
+    name: Code Quality Check
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Check file structure
+      run: |
+        echo "Checking project structure..."
+        
+        # Check required files
+        $requiredFiles = @(
+          "README.md",
+          "LICENSE.txt",
+          "build.bat",
+          "CMakeLists.txt",
+          "src/main.cpp",
+          "src/SnipX.h",
+          "src/SnipX.cpp"
+        )
+        
+        $missing = @()
+        foreach ($file in $requiredFiles) {
+          if (-not (Test-Path $file)) {
+            $missing += $file
+          }
+        }
+        
+        if ($missing.Count -gt 0) {
+          echo "Missing required files:"
+          $missing | ForEach-Object { echo "  - $_" }
+          exit 1
+        }
+        
+        echo "All required files present"
+      shell: pwsh
+    
+    - name: Check code style
+      run: |
+        echo "Checking code style..."
+        
+        # Check for tabs (should use spaces)
+        $tabFiles = Get-ChildItem -Path src -Filter *.cpp,*.h -Recurse | 
+          Where-Object { (Get-Content $_.FullName -Raw) -match "`t" }
+        
+        if ($tabFiles) {
+          echo "Files containing tabs (should use spaces):"
+          $tabFiles | ForEach-Object { echo "  - $($_.Name)" }
+          echo "Warning: Consider using spaces instead of tabs"
+        }
+        
+        echo "Code style check completed"
+      shell: pwsh
+    
+    - name: Count lines of code
+      run: |
+        echo "Counting lines of code..."
+        
+        $cppFiles = Get-ChildItem -Path src -Filter *.cpp -Recurse
+        $hFiles = Get-ChildItem -Path src -Filter *.h -Recurse
+        
+        $cppLines = ($cppFiles | Get-Content | Measure-Object -Line).Lines
+        $hLines = ($hFiles | Get-Content | Measure-Object -Line).Lines
+        $totalLines = $cppLines + $hLines
+        
+        echo "C++ implementation files: $($cppFiles.Count) files, $cppLines lines"
+        echo "C++ header files: $($hFiles.Count) files, $hLines lines"
+        echo "Total: $totalLines lines"
+      shell: pwsh
+  
+  summary:
+    name: Build Summary
+    runs-on: windows-latest
+    needs: [build-msvc, build-mingw, build-cmake, code-quality]
+    if: always()
+    
+    steps:
+    - name: Summary
+      run: |
+        echo "Build Summary"
+        echo "============="
+        echo "MSVC Build: ${{ needs.build-msvc.result }}"
+        echo "MinGW Build: ${{ needs.build-mingw.result }}"
+        echo "CMake Build: ${{ needs.build-cmake.result }}"
+        echo "Code Quality: ${{ needs.code-quality.result }}"
