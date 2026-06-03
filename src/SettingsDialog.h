@@ -21,7 +21,7 @@ public:
 private:
     static INT_PTR CALLBACK DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
     
-    void CreateDialog();
+    void CreateDialogWindow();
     void InitControls(HWND hwnd);
     void LoadSettings(HWND hwnd);
     void SaveSettings(HWND hwnd);

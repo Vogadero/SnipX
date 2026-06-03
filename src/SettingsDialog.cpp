@@ -50,10 +50,10 @@ SettingsDialog::~SettingsDialog()
 
 void SettingsDialog::Show()
 {
-    CreateDialog();
+    CreateDialogWindow();
 }
 
-void SettingsDialog::CreateDialog()
+void SettingsDialog::CreateDialogWindow()
 {
     // 注册对话框类
     WNDCLASSEXW wc = { 0 };

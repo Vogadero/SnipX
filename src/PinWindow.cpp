@@ -3,6 +3,7 @@
 #include "PinWindow.h"
 #include "SnipX.h"
 #include <algorithm>
+#include <windowsx.h>
 
 namespace
 {
@@ -194,18 +195,18 @@ void PinWindow::ApplyScale(double scale)
     if (m_originalWidth <= 0 || m_originalHeight <= 0)
         return;
 
-    int maxWidth = std::max(MIN_PIN_SIZE, std::min(MAX_PIN_SIZE, GetSystemMetrics(SM_CXVIRTUALSCREEN) * 3));
-    int maxHeight = std::max(MIN_PIN_SIZE, std::min(MAX_PIN_SIZE, GetSystemMetrics(SM_CYVIRTUALSCREEN) * 3));
+    int maxWidth = (std::max)(MIN_PIN_SIZE, (std::min)(MAX_PIN_SIZE, GetSystemMetrics(SM_CXVIRTUALSCREEN) * 3));
+    int maxHeight = (std::max)(MIN_PIN_SIZE, (std::min)(MAX_PIN_SIZE, GetSystemMetrics(SM_CYVIRTUALSCREEN) * 3));
 
     int newWidth = ClampSize(static_cast<int>(m_originalWidth * scale + 0.5), MIN_PIN_SIZE, maxWidth);
     int newHeight = ClampSize(static_cast<int>(m_originalHeight * scale + 0.5), MIN_PIN_SIZE, maxHeight);
 
     double widthScale = static_cast<double>(newWidth) / m_originalWidth;
     double heightScale = static_cast<double>(newHeight) / m_originalHeight;
-    m_scale = std::min(widthScale, heightScale);
+    m_scale = (std::min)(widthScale, heightScale);
 
-    m_width = std::max(1, static_cast<int>(m_originalWidth * m_scale + 0.5));
-    m_height = std::max(1, static_cast<int>(m_originalHeight * m_scale + 0.5));
+    m_width = (std::max)(1, static_cast<int>(m_originalWidth * m_scale + 0.5));
+    m_height = (std::max)(1, static_cast<int>(m_originalHeight * m_scale + 0.5));
 
     if (m_hwnd)
     {
@@ -216,7 +217,7 @@ void PinWindow::ApplyScale(double scale)
 
 int PinWindow::ClampSize(int value, int minValue, int maxValue) const
 {
-    return std::max(minValue, std::min(value, maxValue));
+    return (std::max)(minValue, (std::min)(value, maxValue));
 }
 
 LRESULT CALLBACK PinWindow::PinWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)

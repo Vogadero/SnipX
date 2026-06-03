@@ -5,6 +5,7 @@
 
 #include <windows.h>
 #include <gdiplus.h>
+#include <string>
 #include <vector>
 
 using namespace Gdiplus;

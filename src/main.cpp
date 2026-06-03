@@ -6,6 +6,7 @@
 #include "Logger.h"
 #include "MemoryChecker.h"
 #include "PerformanceMonitor.h"
+#include "Version.h"
 #include <windows.h>
 #include <shellapi.h>
 

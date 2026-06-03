@@ -4,6 +4,7 @@
 #include "SnipX.h"
 #include <stdio.h>
 #include <algorithm>
+#include <windowsx.h>
 #include <math.h>
 
 ColorPicker::ColorPicker(SnipXApp* pApp)
@@ -129,8 +130,8 @@ void ColorPicker::CopyColorToClipboard(int format)
     float r = red / 255.0f;
     float g = green / 255.0f;
     float b = blue / 255.0f;
-    float maxVal = std::max(std::max(r, g), b);
-    float minVal = std::min(std::min(r, g), b);
+    float maxVal = (std::max)((std::max)(r, g), b);
+    float minVal = (std::min)((std::min)(r, g), b);
     float delta = maxVal - minVal;
     float hue = 0.0f;
     float hsvSaturation = maxVal == 0.0f ? 0.0f : delta / maxVal;
@@ -287,8 +288,8 @@ void ColorPicker::DrawColorInfo(HDC hdc, POINT pt)
     float r = red / 255.0f;
     float g = green / 255.0f;
     float b = blue / 255.0f;
-    float maxVal = std::max(std::max(r, g), b);
-    float minVal = std::min(std::min(r, g), b);
+    float maxVal = (std::max)((std::max)(r, g), b);
+    float minVal = (std::min)((std::min)(r, g), b);
     float delta = maxVal - minVal;
     float hue = 0.0f;
     float hsvSaturation = maxVal == 0.0f ? 0.0f : delta / maxVal;

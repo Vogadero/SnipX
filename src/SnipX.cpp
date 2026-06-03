@@ -80,7 +80,7 @@ bool SnipXApp::Initialize()
     if (!m_pHotkeyMgr->RegisterHotkey(m_pConfig->GetHotkey()))
     {
         LOG_ERROR(L"Failed to register hotkey");
-        MessageBox(NULL, L"注册热键失败！", L"SnipX", MB_ICONERROR);
+        MessageBoxW(NULL, L"注册热键失败！", L"SnipX", MB_ICONERROR);
         return false;
     }
     LOG_INFO(L"Hotkey registered successfully");

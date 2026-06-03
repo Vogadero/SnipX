@@ -4,6 +4,7 @@
 #include "SnipX.h"
 #include "Config.h"
 #include <dwmapi.h>
+#include <windowsx.h>
 #include <vector>
 
 

@@ -38,8 +38,8 @@ Config::~Config()
 
 void Config::SetDefaultValues()
 {
-    m_hotkey = MAKEWORD(VK_X, HOTKEYF_ALT);
-    m_fullScreenHotkey = MAKEWORD(VK_F, HOTKEYF_ALT);
+    m_hotkey = MAKEWORD('X', HOTKEYF_ALT);
+    m_fullScreenHotkey = MAKEWORD('F', HOTKEYF_ALT);
     m_hasLastSelection = false;
     SetRectEmpty(&m_lastSelection);
     m_historyLimit = DEFAULT_HISTORY_LIMIT;

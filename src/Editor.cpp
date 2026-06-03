@@ -6,7 +6,9 @@
 #include "resource.h"
 #include <algorithm>
 #include <cmath>
+#include <shlobj.h>
 #include <shlwapi.h>
+#include <windowsx.h>
 
 
 namespace
