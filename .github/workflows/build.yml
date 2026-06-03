@@ -14,7 +14,7 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: Setup MSVC
       uses: microsoft/setup-msbuild@v1.1
@@ -55,7 +55,7 @@ jobs:
       shell: bash
     
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: SnipX-MSVC
         path: bin/SnipX.exe
@@ -67,7 +67,7 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: Setup MinGW
       uses: msys2/setup-msys2@v2
@@ -94,7 +94,7 @@ jobs:
       shell: cmd
     
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: SnipX-MinGW
         path: bin/SnipX.exe
@@ -106,7 +106,7 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: Setup MSVC
       uses: microsoft/setup-msbuild@v1.1
@@ -132,7 +132,7 @@ jobs:
       shell: cmd
     
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: SnipX-CMake
         path: build/bin/Release/SnipX.exe
@@ -144,7 +144,7 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: Check file structure
       run: |
@@ -153,7 +153,7 @@ jobs:
         # Check required files
         $requiredFiles = @(
           "README.md",
-          "LICENSE.txt",
+          "LICENSE",
           "build.bat",
           "CMakeLists.txt",
           "src/main.cpp",
