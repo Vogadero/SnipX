@@ -79,18 +79,10 @@ jobs:
         Copy-Item "LICENSE" "$releaseRoot\LICENSE" -Force
       shell: pwsh
 
-    - name: Download UPX
+    - name: Keep portable executable uncompressed
       run: |
-        curl -L https://github.com/upx/upx/releases/download/v4.2.1/upx-4.2.1-win64.zip -o upx.zip
-        7z x upx.zip
-        move upx-4.2.1-win64\upx.exe .
-      shell: cmd
-
-    - name: Compress portable executable with UPX
-      run: |
-        upx --best --lzma release\SnipX-${{ steps.get_version.outputs.VERSION }}\SnipX.exe
-      shell: cmd
-      continue-on-error: true
+        echo "Skipping UPX compression so the portable exe keeps its original PE resources and runtime metadata."
+      shell: pwsh
 
     - name: Create ZIP archive
       run: |

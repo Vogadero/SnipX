@@ -13,7 +13,8 @@ if(WIN32)
     
     # 优化选项
     if(MSVC)
-        # MSVC编译器优化
+        # MSVC编译器优化；静态链接运行库，避免发布的便携版依赖目标机器安装 VC++ Runtime。
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
         add_compile_options(/O2 /GL /EHsc /W3)
         add_link_options(/LTCG /OPT:REF /OPT:ICF /SUBSYSTEM:WINDOWS)
     else()
