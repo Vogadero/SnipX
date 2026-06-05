@@ -4,7 +4,7 @@
 [![Platform](https://img.shields.io/badge/platform-Windows%207%2B-lightgrey.svg)](#系统要求)
 [![Language](https://img.shields.io/badge/language-C%2B%2B17-orange.svg)](https://isocpp.org/)
 [![Build](https://img.shields.io/badge/build-MSVC%20%7C%20MinGW%20%7C%20CMake-brightgreen.svg)](#编译构建)
-[![Status](https://img.shields.io/badge/status-Release%20Candidate-yellow.svg)](#项目状态)
+[![Status](https://img.shields.io/badge/status-Stable-brightgreen.svg)](#项目状态)
 
 > SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级截图工具，聚焦快速截图、标注、贴图、取色、录屏与高可移植发布。
 
@@ -12,7 +12,7 @@
 
 ## 项目状态
 
-当前版本已进入 Release Candidate 阶段，核心截图、标注、设置、贴图、取色、录屏、GIF 导出、文档、发布脚本和官网文档站均已完成。剩余事项主要集中在真实设备/系统测试验证。
+当前版本为 v1.0.0 首个正式版本。核心截图、标注、设置、贴图、取色、录屏、文档、构建脚本和 GitHub Release 工作流均已完成；高 DPI、多显示器不同 DPI 和旧版 Windows 兼容性仍建议在真实设备上持续验证。
 
 ## 功能特性
 

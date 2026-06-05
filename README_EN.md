@@ -1,12 +1,12 @@
 # SnipX - Ultra-Lightweight Screenshot Tool
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.txt)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
 [![Language](https://img.shields.io/badge/language-C%2B%2B17-orange.svg)](https://isocpp.org/)
 [![Size](https://img.shields.io/badge/size-%3C1MB-green.svg)](#)
-[![Status](https://img.shields.io/badge/status-Release%20Candidate-yellow.svg)](#)
+[![Status](https://img.shields.io/badge/status-Stable-brightgreen.svg)](#)
 
-> Ultra-lightweight screenshot tool built with pure Win32 C++, targeting < 1MB size
+> Ultra-lightweight Windows screenshot, annotation, pinning, color picker, and recording tool built with pure Win32 C++17 and GDI+.
 
 [English](#) | [简体中文](README.md)
 
@@ -54,14 +54,14 @@
 
 ### Download
 
-- [Latest Release](https://github.com/yourusername/SnipX/releases/latest)
-- [All Releases](https://github.com/yourusername/SnipX/releases)
+- [Latest Release](https://github.com/Vogadero/SnipX/releases/latest)
+- [All Releases](https://github.com/Vogadero/SnipX/releases)
 
 ### Usage
 
 1. Download `SnipX.exe`
 2. Double-click to run
-3. Press `F1` or `Ctrl+Alt+A` to start capturing
+3. Press `Alt + X` to start region capture, or `Alt + F` for full-screen capture
 
 For detailed instructions, see [User Manual](USER_MANUAL.md)
 
@@ -92,7 +92,7 @@ For detailed instructions, see [User Manual](USER_MANUAL.md)
 #### Using build.bat
 
 ```cmd
-git clone https://github.com/yourusername/SnipX.git
+git clone https://github.com/Vogadero/SnipX.git
 cd SnipX
 build.bat
 ```
@@ -100,7 +100,7 @@ build.bat
 #### Using CMake
 
 ```cmd
-git clone https://github.com/yourusername/SnipX.git
+git clone https://github.com/Vogadero/SnipX.git
 cd SnipX
 mkdir build
 cd build
@@ -161,7 +161,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for deta
 
 ## 🐛 Bug Reports
 
-Found a bug? Please [create an issue](https://github.com/yourusername/SnipX/issues/new) with:
+Found a bug? Please [create an issue](https://github.com/Vogadero/SnipX/issues/new) with:
 
 - Bug description
 - Steps to reproduce
@@ -171,7 +171,7 @@ Found a bug? Please [create an issue](https://github.com/yourusername/SnipX/issu
 
 ## 💡 Feature Requests
 
-Have an idea? Please [create an issue](https://github.com/yourusername/SnipX/issues/new) with:
+Have an idea? Please [create an issue](https://github.com/Vogadero/SnipX/issues/new) with:
 
 - Feature description
 - Use case
@@ -184,7 +184,7 @@ For security issues, please see [SECURITY.md](SECURITY.md) for reporting guideli
 
 ## 📄 License
 
-SnipX is licensed under the [MIT License](LICENSE.txt).
+SnipX is licensed under the [MIT License](LICENSE).
 
 ## 🙏 Acknowledgments
 
@@ -197,10 +197,9 @@ Special thanks to:
 
 ## 📞 Contact
 
-- **GitHub**: https://github.com/yourusername/SnipX
-- **Issues**: https://github.com/yourusername/SnipX/issues
-- **Discussions**: https://github.com/yourusername/SnipX/discussions
-- **Email**: your.email@example.com
+- **GitHub**: https://github.com/Vogadero/SnipX
+- **Issues**: https://github.com/Vogadero/SnipX/issues
+- **Discussions**: https://github.com/Vogadero/SnipX/discussions
 
 ## ⭐ Star History
 
@@ -227,4 +226,4 @@ If you like SnipX, please give it a star! ⭐
 
 **Made with ❤️ by SnipX Team**
 
-**Last Updated**: 2024-01-15
+**Last Updated**: 2026-06-05

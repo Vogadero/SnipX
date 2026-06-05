@@ -5,112 +5,149 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version without leading v, for example 1.0.0'
+        required: true
+        default: '1.0.0'
+      prerelease:
+        description: 'Mark this release as a prerelease'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: windows-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
+
     - name: Setup MSVC
       uses: microsoft/setup-msbuild@v1.1
-    
+
     - name: Build with MSVC
       run: |
         call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         build.bat
       shell: cmd
-    
+
     - name: Get version
       id: get_version
       run: |
-        echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-      shell: bash
-    
+        if ('${{ github.ref_type }}' -eq 'tag' -and '${{ github.ref_name }}'.StartsWith('v')) {
+          $tag = '${{ github.ref_name }}'
+          $version = $tag.Substring(1)
+        } else {
+          $version = '${{ inputs.version }}'
+          if ([string]::IsNullOrWhiteSpace($version)) {
+            $version = '1.0.0'
+          }
+          $tag = "v$version"
+        }
+
+        $prerelease = 'false'
+        if ('${{ github.event_name }}' -eq 'workflow_dispatch') {
+          $prerelease = '${{ inputs.prerelease }}'.ToLowerInvariant()
+        }
+        if ($tag -match '-(alpha|beta|rc)') {
+          $prerelease = 'true'
+        }
+
+        "VERSION=$version" >> $env:GITHUB_OUTPUT
+        "TAG=$tag" >> $env:GITHUB_OUTPUT
+        "PRERELEASE=$prerelease" >> $env:GITHUB_OUTPUT
+        "Release version: $version"
+        "Release tag: $tag"
+        "Prerelease: $prerelease"
+      shell: pwsh
+
     - name: Create release directory
       run: |
-        mkdir release
-        mkdir release\SnipX-${{ steps.get_version.outputs.VERSION }}
-        copy bin\SnipX.exe release\SnipX-${{ steps.get_version.outputs.VERSION }}\
-        copy README.md release\SnipX-${{ steps.get_version.outputs.VERSION }}\
-        copy USER_MANUAL.md release\SnipX-${{ steps.get_version.outputs.VERSION }}\用户手册.md
-        copy CHANGELOG.md release\SnipX-${{ steps.get_version.outputs.VERSION }}\更新日志.md
-      shell: cmd
-    
+        $version = '${{ steps.get_version.outputs.VERSION }}'
+        $releaseRoot = "release\SnipX-$version"
+        New-Item -ItemType Directory -Force -Path $releaseRoot | Out-Null
+        Copy-Item "bin\SnipX.exe" "$releaseRoot\SnipX.exe" -Force
+        Copy-Item "README.md" "$releaseRoot\README.md" -Force
+        Copy-Item "USER_MANUAL.md" "$releaseRoot\用户手册.md" -Force
+        Copy-Item "CHANGELOG.md" "$releaseRoot\更新日志.md" -Force
+        Copy-Item "RELEASE_NOTES.md" "$releaseRoot\RELEASE_NOTES.md" -Force
+        Copy-Item "LICENSE" "$releaseRoot\LICENSE" -Force
+      shell: pwsh
+
     - name: Download UPX
       run: |
         curl -L https://github.com/upx/upx/releases/download/v4.2.1/upx-4.2.1-win64.zip -o upx.zip
         7z x upx.zip
         move upx-4.2.1-win64\upx.exe .
       shell: cmd
-    
-    - name: Compress with UPX
+
+    - name: Compress portable executable with UPX
       run: |
         upx --best --lzma release\SnipX-${{ steps.get_version.outputs.VERSION }}\SnipX.exe
       shell: cmd
       continue-on-error: true
-    
+
     - name: Create ZIP archive
       run: |
-        cd release
-        7z a -tzip SnipX-${{ steps.get_version.outputs.VERSION }}.zip SnipX-${{ steps.get_version.outputs.VERSION }}\*
-      shell: cmd
-    
+        $version = '${{ steps.get_version.outputs.VERSION }}'
+        Push-Location release
+        7z a -tzip "SnipX-$version.zip" "SnipX-$version\*"
+        Pop-Location
+      shell: pwsh
+
+    - name: Generate SHA256 checksums
+      run: |
+        $version = '${{ steps.get_version.outputs.VERSION }}'
+        $files = @(
+          "release\SnipX-$version\SnipX.exe",
+          "release\SnipX-$version.zip"
+        )
+
+        $lines = foreach ($file in $files) {
+          $hash = Get-FileHash -Algorithm SHA256 -Path $file
+          "$($hash.Hash.ToLowerInvariant())  $(Split-Path -Leaf $file)"
+        }
+
+        $checksumPath = "release\SnipX-$version-SHA256.txt"
+        Set-Content -Path $checksumPath -Value $lines -Encoding ascii
+        Get-Content $checksumPath
+      shell: pwsh
+
     - name: Get file size
       id: file_size
       run: |
-        $size = (Get-Item "release\SnipX-${{ steps.get_version.outputs.VERSION }}\SnipX.exe").Length
+        $version = '${{ steps.get_version.outputs.VERSION }}'
+        $size = (Get-Item "release\SnipX-$version\SnipX.exe").Length
         $sizeKB = [math]::Round($size / 1KB, 2)
         echo "SIZE_KB=$sizeKB" >> $env:GITHUB_OUTPUT
       shell: pwsh
-    
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
       with:
+        tag_name: ${{ steps.get_version.outputs.TAG }}
+        name: SnipX v${{ steps.get_version.outputs.VERSION }}
+        body_path: RELEASE_NOTES.md
         files: |
           release/SnipX-${{ steps.get_version.outputs.VERSION }}.zip
           release/SnipX-${{ steps.get_version.outputs.VERSION }}/SnipX.exe
-        body: |
-          ## SnipX v${{ steps.get_version.outputs.VERSION }}
-          
-          极致轻量的 Windows 截图工具
-          
-          ### 📦 文件信息
-          - **文件大小**: ${{ steps.file_size.outputs.SIZE_KB }} KB
-          - **系统要求**: Windows 7 或更高版本
-          - **无需安装**: 解压即用
-          
-          ### ✨ 功能特性
-          - 区域截图、全屏截图、窗口截图
-          - 8 种标注工具（矩形、椭圆、箭头、铅笔、文字、直线、马赛克、模糊）
-          - 取色器（RGB/HSL/HEX）
-          - 贴图功能
-          - 多格式保存（PNG/JPG/BMP）
-          - 屏幕录制和 GIF 导出
-          - 多语言支持
-          
-          ### 📥 下载说明
-          - **SnipX.exe**: 单文件版本，直接运行
-          - **SnipX-${{ steps.get_version.outputs.VERSION }}.zip**: 完整包，包含文档
-          
-          ### 📖 使用方法
-          1. 下载 SnipX.exe
-          2. 双击运行
-          3. 按 F1 或 Ctrl+Alt+A 开始截图
-          
-          详细使用说明请查看[用户手册](https://github.com/${{ github.repository }}/blob/main/USER_MANUAL.md)
-          
-          ### 🔄 更新日志
-          查看 [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
+          release/SnipX-${{ steps.get_version.outputs.VERSION }}-SHA256.txt
         draft: false
-        prerelease: false
+        prerelease: ${{ steps.get_version.outputs.PRERELEASE }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Upload artifact
+
+    - name: Upload release artifact
       uses: actions/upload-artifact@v4
       with:
         name: SnipX-${{ steps.get_version.outputs.VERSION }}
-        path: release/SnipX-${{ steps.get_version.outputs.VERSION }}/
+        path: |
+          release/SnipX-${{ steps.get_version.outputs.VERSION }}/
+          release/SnipX-${{ steps.get_version.outputs.VERSION }}.zip
+          release/SnipX-${{ steps.get_version.outputs.VERSION }}-SHA256.txt
+        retention-days: 30
