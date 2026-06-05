@@ -223,7 +223,7 @@ bool ScreenRecorder::ExportGif()
         return false;
 
     m_gifPath = m_outputDirectory + L"\\recording.gif";
-    std::ofstream stream(m_gifPath, std::ios::binary);
+    std::ofstream stream(m_gifPath.c_str(), std::ios::binary);
     if (!WriteTransparentGif(stream))
     {
         m_gifPath.clear();

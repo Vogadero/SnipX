@@ -107,15 +107,15 @@ namespace
 
     int GetStrokeWidthFromSliderX(int x)
     {
-        int clampedX = max(STROKE_SLIDER_TRACK_X, min(STROKE_SLIDER_TRACK_X + STROKE_SLIDER_TRACK_WIDTH, x));
+        int clampedX = (std::max)(STROKE_SLIDER_TRACK_X, (std::min)(STROKE_SLIDER_TRACK_X + STROKE_SLIDER_TRACK_WIDTH, x));
         double ratio = (clampedX - STROKE_SLIDER_TRACK_X) / (double)STROKE_SLIDER_TRACK_WIDTH;
         int width = STROKE_SLIDER_MIN_WIDTH + (int)round(ratio * (STROKE_SLIDER_MAX_WIDTH - STROKE_SLIDER_MIN_WIDTH));
-        return max(STROKE_SLIDER_MIN_WIDTH, min(STROKE_SLIDER_MAX_WIDTH, width));
+        return (std::max)(STROKE_SLIDER_MIN_WIDTH, (std::min)(STROKE_SLIDER_MAX_WIDTH, width));
     }
 
     int GetSliderXFromStrokeWidth(int width)
     {
-        int clampedWidth = max(STROKE_SLIDER_MIN_WIDTH, min(STROKE_SLIDER_MAX_WIDTH, width));
+        int clampedWidth = (std::max)(STROKE_SLIDER_MIN_WIDTH, (std::min)(STROKE_SLIDER_MAX_WIDTH, width));
         double ratio = (clampedWidth - STROKE_SLIDER_MIN_WIDTH) / (double)(STROKE_SLIDER_MAX_WIDTH - STROKE_SLIDER_MIN_WIDTH);
         return STROKE_SLIDER_TRACK_X + (int)round(ratio * STROKE_SLIDER_TRACK_WIDTH);
     }
@@ -307,7 +307,7 @@ namespace
 
         if (style == ARROW_STYLE_DOUBLE_LINE)
         {
-            Pen secondPen(color, (REAL)max(1, strokeWidth - 1));
+            Pen secondPen(color, (REAL)(std::max)(1, strokeWidth - 1));
             secondPen.SetLineCap(LineCapRound, LineCapRound, DashCapRound);
             double dx = end.X - start.X;
             double dy = end.Y - start.Y;
@@ -463,8 +463,8 @@ namespace
         }
 
 
-        rect.X = min(left, right);
-        rect.Y = min(top, bottom);
+        rect.X = (std::min)(left, right);
+        rect.Y = (std::min)(top, bottom);
         rect.Width = abs(right - left);
         rect.Height = abs(bottom - top);
     }
@@ -657,7 +657,7 @@ bool ArrowAnnotation::HitTest(Point pt)
         return false;
     
     float t = ((pt.X - start.X) * dx + (pt.Y - start.Y) * dy) / (len * len);
-    t = max(0.0f, min(1.0f, t));
+    t = (std::max)(0.0f, (std::min)(1.0f, t));
     
     float nearX = start.X + t * dx;
     float nearY = start.Y + t * dy;
@@ -677,8 +677,8 @@ void ArrowAnnotation::Move(int dx, int dy)
 
 Rect ArrowAnnotation::GetBounds() const
 {
-    int left = min(start.X, end.X);
-    int top = min(start.Y, end.Y);
+    int left = (std::min)(start.X, end.X);
+    int top = (std::min)(start.Y, end.Y);
     int width = abs(end.X - start.X);
     int height = abs(end.Y - start.Y);
     if (width == 0) width = 1;
@@ -727,7 +727,7 @@ bool PencilAnnotation::HitTest(Point pt)
             continue;
         
         float t = ((pt.X - points[i-1].X) * dx + (pt.Y - points[i-1].Y) * dy) / (len * len);
-        t = max(0.0f, min(1.0f, t));
+        t = (std::max)(0.0f, (std::min)(1.0f, t));
         
         float nearX = points[i-1].X + t * dx;
         float nearY = points[i-1].Y + t * dy;
@@ -762,10 +762,10 @@ Rect PencilAnnotation::GetBounds() const
 
     for (const auto& point : points)
     {
-        left = min(left, point.X);
-        top = min(top, point.Y);
-        right = max(right, point.X);
-        bottom = max(bottom, point.Y);
+        left = (std::min)(left, point.X);
+        top = (std::min)(top, point.Y);
+        right = (std::max)(right, point.X);
+        bottom = (std::max)(bottom, point.Y);
     }
 
     if (right - left == 0) right = left + 1;
@@ -1774,8 +1774,8 @@ void Editor::UpdateAnnotation(Point pt)
     case ANNO_RECTANGLE:
     {
         RectangleAnnotation* anno = (RectangleAnnotation*)m_currentAnnotation;
-        int x = min(m_startPoint.X, pt.X);
-        int y = min(m_startPoint.Y, pt.Y);
+        int x = (std::min)(m_startPoint.X, pt.X);
+        int y = (std::min)(m_startPoint.Y, pt.Y);
         int w = abs(pt.X - m_startPoint.X);
         int h = abs(pt.Y - m_startPoint.Y);
         anno->rect = Rect(x + m_imageX, y + m_imageY, w, h);
@@ -1784,8 +1784,8 @@ void Editor::UpdateAnnotation(Point pt)
     case ANNO_ELLIPSE:
     {
         EllipseAnnotation* anno = (EllipseAnnotation*)m_currentAnnotation;
-        int x = min(m_startPoint.X, pt.X);
-        int y = min(m_startPoint.Y, pt.Y);
+        int x = (std::min)(m_startPoint.X, pt.X);
+        int y = (std::min)(m_startPoint.Y, pt.Y);
         int w = abs(pt.X - m_startPoint.X);
         int h = abs(pt.Y - m_startPoint.Y);
         anno->rect = Rect(x + m_imageX, y + m_imageY, w, h);
@@ -1808,8 +1808,8 @@ void Editor::UpdateAnnotation(Point pt)
     case ANNO_HIGHLIGHT:
     {
         HighlightAnnotation* anno = (HighlightAnnotation*)m_currentAnnotation;
-        int x = min(m_startPoint.X, pt.X);
-        int y = min(m_startPoint.Y, pt.Y);
+        int x = (std::min)(m_startPoint.X, pt.X);
+        int y = (std::min)(m_startPoint.Y, pt.Y);
         int w = abs(pt.X - m_startPoint.X);
         int h = abs(pt.Y - m_startPoint.Y);
         anno->rect = Rect(x + m_imageX, y + m_imageY, w, h);
@@ -1818,8 +1818,8 @@ void Editor::UpdateAnnotation(Point pt)
     case ANNO_MOSAIC:
     {
         MosaicAnnotation* anno = (MosaicAnnotation*)m_currentAnnotation;
-        int x = min(m_startPoint.X, pt.X);
-        int y = min(m_startPoint.Y, pt.Y);
+        int x = (std::min)(m_startPoint.X, pt.X);
+        int y = (std::min)(m_startPoint.Y, pt.Y);
         int w = abs(pt.X - m_startPoint.X);
         int h = abs(pt.Y - m_startPoint.Y);
         anno->rect = Rect(x + m_imageX, y + m_imageY, w, h);
@@ -1828,8 +1828,8 @@ void Editor::UpdateAnnotation(Point pt)
     case ANNO_BLUR:
     {
         BlurAnnotation* anno = (BlurAnnotation*)m_currentAnnotation;
-        int x = min(m_startPoint.X, pt.X);
-        int y = min(m_startPoint.Y, pt.Y);
+        int x = (std::min)(m_startPoint.X, pt.X);
+        int y = (std::min)(m_startPoint.Y, pt.Y);
         int w = abs(pt.X - m_startPoint.X);
         int h = abs(pt.Y - m_startPoint.Y);
         anno->rect = Rect(x + m_imageX, y + m_imageY, w, h);
@@ -2285,8 +2285,8 @@ void MosaicAnnotation::Draw(Graphics* graphics)
         for (int x = rect.X; x < rect.X + rect.Width; x += blockSize)
         {
             // 计算块的实际大小
-            int bw = min(blockSize, rect.X + rect.Width - x);
-            int bh = min(blockSize, rect.Y + rect.Height - y);
+            int bw = (std::min)(blockSize, rect.X + rect.Width - x);
+            int bh = (std::min)(blockSize, rect.Y + rect.Height - y);
             
             if (bw <= 0 || bh <= 0)
                 continue;
@@ -2342,8 +2342,8 @@ void BlurAnnotation::Draw(Graphics* graphics)
         return;
     
     // 简化的模糊效果：使用缩小再放大的方式
-    int smallWidth = max(1, rect.Width / 10);
-    int smallHeight = max(1, rect.Height / 10);
+    int smallWidth = (std::max)(1, rect.Width / 10);
+    int smallHeight = (std::max)(1, rect.Height / 10);
     
     Bitmap* smallBitmap = new Bitmap(smallWidth, smallHeight);
     Graphics* g = Graphics::FromImage(smallBitmap);

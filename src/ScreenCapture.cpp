@@ -3,6 +3,7 @@
 #include "ScreenCapture.h"
 #include "SnipX.h"
 #include "Config.h"
+#include <algorithm>
 #include <dwmapi.h>
 #include <windowsx.h>
 #include <vector>
@@ -127,7 +128,9 @@ bool ScreenCapture::CaptureScrollingWindow()
     {
         if (i > 0)
         {
-            SendMessageW(targetWindow, WM_MOUSEWHEEL, MAKEWPARAM(0, -WHEEL_DELTA * 5), 0);
+            const SHORT wheelDelta = static_cast<SHORT>(-WHEEL_DELTA * 5);
+            const WPARAM wheelParam = static_cast<WPARAM>(static_cast<WORD>(wheelDelta)) << 16;
+            SendMessageW(targetWindow, WM_MOUSEWHEEL, wheelParam, 0);
             Sleep(220);
         }
 
@@ -340,10 +343,10 @@ void ScreenCapture::UpdateSelection(POINT pt)
     if (m_selecting)
     {
         // 正在拖拽选区
-        m_selectRect.left = min(m_startPoint.x, m_currentPoint.x);
-        m_selectRect.top = min(m_startPoint.y, m_currentPoint.y);
-        m_selectRect.right = max(m_startPoint.x, m_currentPoint.x);
-        m_selectRect.bottom = max(m_startPoint.y, m_currentPoint.y);
+        m_selectRect.left = (std::min)(m_startPoint.x, m_currentPoint.x);
+        m_selectRect.top = (std::min)(m_startPoint.y, m_currentPoint.y);
+        m_selectRect.right = (std::max)(m_startPoint.x, m_currentPoint.x);
+        m_selectRect.bottom = (std::max)(m_startPoint.y, m_currentPoint.y);
     }
     else
     {

@@ -50,7 +50,7 @@ void Logger::Initialize(const std::wstring& logPath)
             }
         }
         
-        m_logFile.open(path, std::ios::out | std::ios::app);
+        m_logFile.open(path.c_str(), std::ios::out | std::ios::app);
         if (m_logFile.is_open())
         {
             m_initialized = true;
