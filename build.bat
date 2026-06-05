@@ -21,7 +21,7 @@ if %ERRORLEVEL% EQU 0 (
 
 echo 错误：未找到编译器！
 echo 请安装 Visual Studio 或 MinGW-w64
-pause
+if not defined CI pause
 exit /b 1
 
 :BUILD_MSVC
@@ -57,7 +57,7 @@ cl /c /O2 /GL /EHsc /MD /W3 /nologo ^
 
 if %ERRORLEVEL% NEQ 0 (
     echo 编译失败！
-    pause
+    if not defined CI pause
     exit /b 1
 )
 
@@ -79,18 +79,18 @@ link /OUT:bin\SnipX.exe /SUBSYSTEM:WINDOWS /LTCG /OPT:REF /OPT:ICF ^
      obj\PinWindow.obj ^
      obj\SettingsDialog.obj ^
      obj\SnipX.res ^
-     gdiplus.lib shell32.lib user32.lib gdi32.lib ole32.lib dwmapi.lib comctl32.lib comdlg32.lib wininet.lib psapi.lib
+     gdiplus.lib shell32.lib user32.lib gdi32.lib ole32.lib dwmapi.lib shlwapi.lib advapi32.lib comctl32.lib comdlg32.lib wininet.lib psapi.lib
 
 if %ERRORLEVEL% NEQ 0 (
     echo 链接失败！
-    pause
+    if not defined CI pause
     exit /b 1
 )
 
 echo.
 echo 编译成功！
 dir bin\SnipX.exe
-pause
+if not defined CI pause
 exit /b 0
 
 :BUILD_MINGW
@@ -124,17 +124,17 @@ g++ -o bin\SnipX.exe ^
     src\PinWindow.cpp ^
     src\SettingsDialog.cpp ^
     obj\SnipX.res ^
-    -lgdiplus -lshell32 -luser32 -lgdi32 -lole32 -ldwmapi -lshlwapi -lcomctl32 -lcomdlg32 -lwininet -lpsapi
+    -lgdiplus -lshell32 -luser32 -lgdi32 -lole32 -ldwmapi -lshlwapi -ladvapi32 -lcomctl32 -lcomdlg32 -lwininet -lpsapi
 
 
 if %ERRORLEVEL% NEQ 0 (
     echo 编译失败！
-    pause
+    if not defined CI pause
     exit /b 1
 )
 
 echo.
 echo 编译成功！
 dir bin\SnipX.exe
-pause
+if not defined CI pause
 exit /b 0

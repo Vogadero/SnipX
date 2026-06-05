@@ -98,6 +98,7 @@ if(WIN32)
         ole32
         dwmapi
         shlwapi
+        advapi32
         comctl32
 
         comdlg32

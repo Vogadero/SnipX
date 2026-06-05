@@ -47,12 +47,13 @@ jobs:
     
     - name: Check file size
       run: |
-        if [ "${{ steps.file_size.outputs.SIZE_MB }}" -gt "1" ]; then
+        $sizeMB = [double]'${{ steps.file_size.outputs.SIZE_MB }}'
+        if ($sizeMB -gt 1) {
           echo "Warning: File size exceeds 1MB target"
-        else
+        } else {
           echo "File size is within target"
-        fi
-      shell: bash
+        }
+      shell: pwsh
     
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -182,8 +183,8 @@ jobs:
         echo "Checking code style..."
         
         # Check for tabs (should use spaces)
-        $tabFiles = Get-ChildItem -Path src -Filter *.cpp,*.h -Recurse | 
-          Where-Object { (Get-Content $_.FullName -Raw) -match "`t" }
+        $tabFiles = Get-ChildItem -Path src -Recurse -File |
+          Where-Object { $_.Extension -in '.cpp', '.h' -and (Get-Content $_.FullName -Raw) -match "`t" }
         
         if ($tabFiles) {
           echo "Files containing tabs (should use spaces):"
