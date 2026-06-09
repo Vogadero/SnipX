@@ -135,6 +135,9 @@ bool ScreenCapture::CaptureScrollingWindow()
         }
 
         CaptureScreen();
+        if (!m_pScreenBitmap)
+            continue;
+
         int x = windowRect.left - GetSystemMetrics(SM_XVIRTUALSCREEN);
         int y = windowRect.top - GetSystemMetrics(SM_YVIRTUALSCREEN);
         Bitmap* segment = m_pScreenBitmap->Clone(x, y, width, height, PixelFormat32bppARGB);
@@ -585,6 +588,14 @@ LRESULT CALLBACK ScreenCapture::CaptureWndProc(HWND hwnd, UINT msg, WPARAM wPara
             {
                 RECT selection = pThis->m_selectRect;
                 pThis->CompleteSelection(selection, true);
+            }
+        }
+        else if (wParam == 'R' || wParam == 'H')
+        {
+            if (pThis && pThis->m_pApp)
+            {
+                pThis->Cancel();
+                pThis->m_pApp->StartColorPicker();
             }
         }
 

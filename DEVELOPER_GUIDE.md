@@ -59,7 +59,7 @@
 ### 克隆项目
 
 ```bash
-git clone https://github.com/yourusername/SnipX.git
+git clone https://github.com/vogadero/SnipX.git
 cd SnipX
 ```
 
@@ -679,10 +679,10 @@ A: 参考 `PERFORMANCE_OPTIMIZATION.md` 中的"体积优化"章节
 
 ## 资源链接
 
-- **项目主页**: https://github.com/yourusername/SnipX
-- **问题跟踪**: https://github.com/yourusername/SnipX/issues
-- **Wiki**: https://github.com/yourusername/SnipX/wiki
-- **讨论区**: https://github.com/yourusername/SnipX/discussions
+- **项目主页**: https://github.com/vogadero/SnipX
+- **问题跟踪**: https://github.com/vogadero/SnipX/issues
+- **Wiki**: https://github.com/vogadero/SnipX/wiki
+- **讨论区**: https://github.com/vogadero/SnipX/discussions
 
 ### 技术文档
 
@@ -700,9 +700,7 @@ A: 参考 `PERFORMANCE_OPTIMIZATION.md` 中的"体积优化"章节
 
 ## 联系方式
 
-- **邮件**: your.email@example.com
-- **GitHub**: @yourusername
-- **Discord**: SnipX Community
+- **GitHub**: https://github.com/vogadero/SnipX
 
 ---
 

@@ -115,7 +115,7 @@ public:
     static DWORD WINAPI CheckUpdateThread(LPVOID param)
     {
         UpdateChecker* checker = (UpdateChecker*)param;
-        UpdateInfo info = checker->CheckForUpdate(L"yourusername", L"SnipX");
+        UpdateInfo info = checker->CheckForUpdate(L"vogadero", L"SnipX");
         
         if (info.hasUpdate)
         {

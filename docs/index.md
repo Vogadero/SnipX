@@ -29,8 +29,8 @@ features:
     details: 支持区域、全屏、窗口、滚动截图，多显示器完美支持，智能窗口检测
   
   - icon: 🎨
-    title: 9种标注工具
-    details: 矩形、椭圆、箭头、直线、铅笔、文字、马赛克、模糊、序号标签
+    title: 10 种标注工具
+    details: 矩形、椭圆、箭头、铅笔、文字、直线、序号、高亮、马赛克、模糊
   
   - icon: 🔧
     title: 完整编辑
@@ -50,11 +50,11 @@ features:
   
   - icon: 🎬
     title: 录屏功能
-    details: 屏幕录制，GIF 导出，高质量视频录制
+    details: 屏幕帧序列录制，提供 GIF 导出入口
   
   - icon: ⌨️
     title: 快捷键支持
-    details: 丰富的快捷键，F1 启动截图，Ctrl+S 保存，Ctrl+C 复制
+    details: 丰富的快捷键，Alt+X 启动区域截图，Alt+F 全屏截图，Ctrl+S 保存，Ctrl+C 复制
   
   - icon: 🌍
     title: 多语言
@@ -77,7 +77,7 @@ SnipX 采用纯 C++ Win32 API 开发，没有任何第三方依赖，体积小�
 
 ### 功能强大，应有尽有
 
-虽然体积小，但功能一点也不少。9 种标注工具、取色器、贴图、录屏、多格式保存、快捷键支持等功能应有尽有，满足你的所有截图需求。
+虽然体积小，但功能一点也不少。10 种标注工具、取色器、贴图、录屏、多格式保存、快捷键支持等功能应有尽有，满足你的所有截图需求。
 
 ### 简单易用，开箱即用
 
@@ -91,14 +91,8 @@ SnipX 采用 MIT 许可证开源，完全免费使用。我们会持续更新和
 
 ## 📸 功能展示
 
-::: tip 需要截图
-请在以下位置添加功能截图：
-
-1. **主界面截图** - `/docs/public/screenshots/main-interface.png`
-2. **标注工具** - `/docs/public/screenshots/annotation-tools.png`
-3. **取色器** - `/docs/public/screenshots/color-picker.png`
-4. **贴图功能** - `/docs/public/screenshots/pin-window.png`
-5. **设置界面** - `/docs/public/screenshots/settings.png`
+::: tip 当前资源状态
+网站已内置基础 Logo、favicon 和首页主图。功能实拍截图建议后续按 [截图需求清单](./SCREENSHOTS_NEEDED.md) 补充到 `docs/public/screenshots/`，以展示真实使用场景。
 :::
 
 ---
@@ -115,7 +109,7 @@ SnipX 采用 MIT 许可证开源，完全免费使用。我们会持续更新和
 
 ### 3. 开始截图
 
-按 `F1` 或 `Ctrl+Alt+A` 开始截图。
+按 `Alt+X` 开始区域截图，或按 `Alt+F` 进行全屏截图。
 
 ### 4. 标注和保存
 
@@ -131,16 +125,6 @@ SnipX 采用 MIT 许可证开源，完全免费使用。我们会持续更新和
 | 其他工具 A | ~50MB | ~2s | ~80MB | ~5% |
 | 其他工具 B | ~30MB | ~1.5s | ~60MB | ~3% |
 | 其他工具 C | ~100MB | ~3s | ~150MB | ~8% |
-
----
-
-## 💬 用户评价
-
-> "终于找到一款真正轻量的截图工具了！体积小，速度快，功能还很强大。" - 用户 A
-
-> "界面简洁，操作直观，快捷键丰富，非常好用！" - 用户 B
-
-> "开源免费，还这么好用，必须支持！" - 用户 C
 
 ---
 
@@ -166,5 +150,5 @@ SnipX 是一个开源项目，欢迎大家参与贡献！
 <div style="text-align: center; margin-top: 40px;">
   <h2>立即开始使用 SnipX</h2>
   <p style="font-size: 18px; color: #666;">让截图回归简单与轻量</p>
-  <a href="/download" style="display: inline-block; padding: 12px 32px; background: #3eaf7c; color: white; border-radius: 4px; text-decoration: none; font-weight: 600; margin-top: 20px;">立即下载</a>
+  <a href="/SnipX/download" style="display: inline-block; padding: 12px 32px; background: #3eaf7c; color: white; border-radius: 4px; text-decoration: none; font-weight: 600; margin-top: 20px;">立即下载</a>
 </div>

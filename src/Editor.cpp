@@ -6,6 +6,8 @@
 #include "resource.h"
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
+#include <cstring>
 #include <shlobj.h>
 #include <shlwapi.h>
 #include <windowsx.h>
@@ -70,6 +72,24 @@ namespace
         { ANNO_MOSAIC, L"马赛克", L"马赛克工具" },
         { ANNO_BLUR, L"模糊", L"模糊工具" }
     };
+
+    AnnotationType GetToolFromShortcut(WPARAM key)
+    {
+        switch (key)
+        {
+        case '1': return ANNO_RECTANGLE;
+        case '2': return ANNO_ELLIPSE;
+        case '3': return ANNO_ARROW;
+        case '4': return ANNO_LINE;
+        case '5': return ANNO_PENCIL;
+        case '6': return ANNO_TEXT;
+        case '7': return ANNO_NUMBER;
+        case '8': return ANNO_HIGHLIGHT;
+        case '9': return ANNO_MOSAIC;
+        case '0': return ANNO_BLUR;
+        default: return ANNO_NONE;
+        }
+    }
 
     const Color PRESET_COLORS[COLOR_PANEL_COUNT] = {
         Color(255, 255, 0, 0),
@@ -1600,11 +1620,22 @@ LRESULT CALLBACK Editor::EditorWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
                 InvalidateRect(hwnd, NULL, FALSE);
             }
         }
-        else if (wParam == VK_DELETE)
+        else if (wParam == VK_DELETE || wParam == VK_BACK)
         {
             if (pThis)
             {
                 pThis->DeleteSelectedAnnotation();
+                InvalidateRect(hwnd, NULL, FALSE);
+            }
+        }
+        else
+        {
+            AnnotationType shortcutTool = GetToolFromShortcut(wParam);
+            if (pThis && shortcutTool != ANNO_NONE)
+            {
+                pThis->m_currentTool = shortcutTool;
+                pThis->m_showColorPanel = false;
+                pThis->m_showStrokeSlider = false;
                 InvalidateRect(hwnd, NULL, FALSE);
             }
         }
@@ -2209,8 +2240,8 @@ bool Editor::HitTestBottomBar(Point pt, int& action)
     int x = 10;
     int btnWidth = 80;
     int spacing = 10;
-    
-    for (int i = 0; i < 4; i++)
+
+    for (int i = 0; i < 6; i++)
     {
         if (pt.X >= x && pt.X <= x + btnWidth)
         {

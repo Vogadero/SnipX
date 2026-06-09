@@ -5,7 +5,7 @@
 #define MyAppName "SnipX"
 #define MyAppVersion "1.0.0"
 #define MyAppPublisher "SnipX Team"
-#define MyAppURL "https://github.com/yourusername/SnipX"
+#define MyAppURL "https://github.com/vogadero/SnipX"
 #define MyAppExeName "SnipX.exe"
 
 [Setup]

@@ -418,6 +418,18 @@ LRESULT CALLBACK ColorPicker::PickerWndProc(HWND hwnd, UINT msg, WPARAM wParam, 
             }
 
         }
+        else if (wParam == 'C')
+        {
+            if (pThis)
+            {
+                int format = 1; // RGB
+                if (pThis->m_displayMode == 1)
+                    format = 3; // HSV
+                else if (pThis->m_displayMode == 2)
+                    format = 2; // HSL
+                pThis->CopyColorToClipboard(format);
+            }
+        }
         else if (wParam == '1')
         {
             if (pThis)

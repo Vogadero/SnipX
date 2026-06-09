@@ -5,8 +5,10 @@
 ## 📦 安装依赖
 
 ```bash
-npm install
+npm ci
 ```
+
+> 首次更新依赖时可运行 `npm install` 并提交生成的 `package-lock.json`；日常构建和 CI 使用 `npm ci`。
 
 ## 🚀 本地开发
 
@@ -14,7 +16,7 @@ npm install
 npm run docs:dev
 ```
 
-访问 http://localhost:5173
+访问 `http://localhost:5173`
 
 ## 🏗️ 构建
 
@@ -28,109 +30,61 @@ npm run docs:build
 npm run docs:preview
 ```
 
-## 📸 截图要求
+## 📸 静态资源
 
-请将以下截图放置在 `/docs/public/screenshots/` 目录：
+基础网站资源已放在 `docs/public/`：
 
-### 必需截图
+- `hero-image.png` - 首页主图
+- `logo.png` - 导航栏 Logo
+- `favicon.ico` - 网站图标
+- `screenshots/` - 后续功能实拍截图目录
 
-1. **hero-image.png** - 首页主图（推荐尺寸：800x600）
-2. **logo.png** - Logo（推荐尺寸：128x128）
-3. **favicon.ico** - 网站图标（16x16, 32x32, 48x48）
+如需补充功能截图，请参考 [SCREENSHOTS_NEEDED.md](SCREENSHOTS_NEEDED.md)。
 
-### 功能截图
+## 📁 当前目录结构
 
-4. **main-interface.png** - 主界面
-5. **region-capture.png** - 区域截图
-6. **window-detection.png** - 窗口检测
-7. **annotation-tools.png** - 标注工具
-8. **color-picker.png** - 取色器
-9. **pin-window.png** - 贴图功能
-10. **settings.png** - 设置界面
-11. **recording.png** - 录屏功能
-
-### 截图规范
-
-- 格式：PNG
-- 分辨率：1920x1080 或更高
-- 背景：干净整洁
-- 内容：突出功能特点
-- 文字：清晰可读
-
-## 📁 目录结构
-
-```
+```text
 docs/
 ├── .vitepress/
-│   ├── config.mts          # VitePress 配置
-│   └── dist/               # 构建输出
-├── .github/
-│   └── workflows/
-│       └── deploy.yml      # GitHub Pages 部署
-├── guide/                  # 指南文档
-│   ├── getting-started.md
-│   ├── basic-features.md
-│   ├── annotation-tools.md
-│   ├── advanced-features.md
-│   ├── shortcuts.md
-│   ├── settings.md
-│   ├── compile.md
-│   ├── contributing.md
-│   └── api.md
-├── public/                 # 静态资源
-│   ├── screenshots/        # 截图
+│   └── config.mts          # VitePress 配置
+├── guide/
+│   ├── getting-started.md  # 快速开始
+│   └── shortcuts.md        # 快捷键
+├── public/
+│   ├── screenshots/        # 功能截图目录
+│   ├── hero-image.png
 │   ├── logo.png
 │   └── favicon.ico
 ├── index.md                # 首页
 ├── features.md             # 功能特性
 ├── download.md             # 下载页面
 ├── package.json
-└── README.md               # 本文件
+├── package-lock.json
+└── README.md
 ```
 
-## 🌍 多语言支持
+## 🌍 语言状态
 
-网站支持中英文双语：
-
-- 中文：`/`
-- 英文：`/en/`
-
-添加新语言：
-
-1. 在 `.vitepress/config.mts` 中添加语言配置
-2. 创建对应的语言目录和文件
+当前文档站以简体中文为主。项目根目录提供英文 README；如果未来要发布英文站点，需要补齐 `docs/en/` 页面并重新启用 VitePress `locales` 配置。
 
 ## 🚀 部署到 GitHub Pages
 
-### 自动部署
+GitHub Actions 配置位于仓库根目录：
 
-推送到 `main` 分支后，GitHub Actions 会自动构建并部署到 GitHub Pages。
+```text
+.github/workflows/docs.yml
+```
 
-### 手动部署
+推送到 `main` 分支且 `docs/**` 或该 workflow 发生变化时，会自动构建并部署到 GitHub Pages。
 
-1. 构建网站：
-   ```bash
-   npm run docs:build
-   ```
+部署前请在 GitHub 仓库设置中启用 GitHub Pages：
 
-2. 推送到 GitHub：
-   ```bash
-   git add .
-   git commit -m "Update docs"
-   git push
-   ```
+- Settings → Pages
+- Source: GitHub Actions
 
-3. 在 GitHub 仓库设置中启用 GitHub Pages：
-   - Settings → Pages
-   - Source: GitHub Actions
-
-### 访问网站
-
-部署成功后，访问：https://vogadero.github.io/SnipX/
+部署成功后访问：https://vogadero.github.io/SnipX/
 
 ## 📝 编写文档
-
-### Markdown 语法
 
 VitePress 支持标准 Markdown 语法和扩展语法：
 
@@ -153,33 +107,13 @@ VitePress 支持标准 Markdown 语法和扩展语法：
 :::
 ```
 
-### 代码块
-
-````markdown
-```javascript
-console.log('Hello, SnipX!')
-```
-````
-
 ### 图片
 
 ```markdown
 ![描述](/screenshots/image.png)
 ```
 
-## 🎨 自定义样式
-
-在 `.vitepress/theme/custom.css` 中添加自定义样式。
-
-## 🔧 配置
-
-在 `.vitepress/config.mts` 中修改配置：
-
-- 网站标题和描述
-- 导航栏
-- 侧边栏
-- 主题配置
-- 多语言配置
+在 GitHub Pages 项目页中，VitePress 会根据 `base: '/SnipX/'` 处理 Markdown 资源路径；避免在 raw HTML 中写未带 `/SnipX/` 前缀的站内绝对路径。
 
 ## 📞 获取帮助
 

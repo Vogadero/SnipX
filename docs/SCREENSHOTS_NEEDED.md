@@ -306,7 +306,7 @@ docs/
 
 如果在准备截图时遇到问题：
 
-- 📖 查看 [WEBSITE_DEPLOYMENT_GUIDE.md](../WEBSITE_DEPLOYMENT_GUIDE.md)
+- 📖 查看 [WEBSITE_DEPLOYMENT_GUIDE.md](https://github.com/vogadero/SnipX/blob/main/WEBSITE_DEPLOYMENT_GUIDE.md)
 - 💬 在 [GitHub Discussions](https://github.com/vogadero/SnipX/discussions) 讨论
 - 🐛 在 [GitHub Issues](https://github.com/vogadero/SnipX/issues) 报告问题
 
