@@ -132,7 +132,10 @@ For detailed build instructions, see [COMPILE.md](COMPILE.md)
 
 ## 🎯 Roadmap
 
-### v1.1.1 - Portable Startup Fix (Current)
+### v1.1.2 - Portable Startup Fix (Current)
+- ✅ Removed the Windows manifest compatibility section that could make activation context creation fail and cause the "side-by-side configuration is incorrect" startup error
+
+### v1.1.1 - Portable Startup Fix
 - ✅ Fixed portable Windows manifest architecture declaration to avoid the "side-by-side configuration is incorrect" startup error
 
 ### v1.1.0 - Enhancement
