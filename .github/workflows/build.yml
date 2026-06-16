@@ -104,14 +104,14 @@ jobs:
   build-cmake:
     name: Build with CMake
     runs-on: windows-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
+
     - name: Setup MSVC
-      uses: microsoft/setup-msbuild@v1.1
-    
+      uses: ilammy/msvc-dev-cmd@v1
+
     - name: Configure CMake
       run: |
         mkdir build
