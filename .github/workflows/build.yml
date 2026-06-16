@@ -121,18 +121,24 @@ jobs:
     
     - name: Check build output
       run: |
-        if not exist "build\bin\Release\SnipX.exe" (
+        if exist "build\bin\SnipX.exe" (
+          echo Build successful: build\bin\SnipX.exe
+        ) else if exist "build\SnipX.exe" (
+          echo Build successful: build\SnipX.exe
+        ) else (
           echo Build failed: SnipX.exe not found
+          dir /s /b build\*.exe
           exit /b 1
         )
-        echo Build successful
       shell: cmd
     
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: SnipX-CMake
-        path: build/bin/Release/SnipX.exe
+        path: |
+          build/bin/SnipX.exe
+          build/SnipX.exe
         retention-days: 7
   
   code-quality:
