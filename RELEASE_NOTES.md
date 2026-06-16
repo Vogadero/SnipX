@@ -1,12 +1,12 @@
-# SnipX v1.0.0 - 首个正式版本
+# SnipX v1.1.0 - 快捷键增强与构建修复
 
-**发布日期**：2026-06-05
+**发布日期**：2026-06-16
 
 **适用平台**：Windows 7 / 8 / 8.1 / 10 / 11，推荐 Windows 10/11 x64
 
 **许可协议**：MIT License
 
-SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级 Windows 截图工具，聚焦快速截图、标注、贴图、取色、录屏与便携发布。v1.0.0 是项目首个正式发布版本。
+SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级 Windows 截图工具，聚焦快速截图、标注、贴图、取色、录屏与便携发布。v1.1.0 在 v1.0.0 首个正式版本基础上，补齐了多项高频快捷键操作，修复了安全与稳定性问题，并完善了文档站和 GitHub Actions 发布流程。
 
 ---
 
@@ -15,10 +15,43 @@ SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级 Win
 | 文件 | 适用场景 | 说明 |
 | --- | --- | --- |
 | `SnipX.exe` | 便携版 | 下载后直接运行，无需安装 |
-| `SnipX-1.0.0.zip` | 完整包 | 包含程序、README、用户手册和更新日志 |
-| `SnipX-1.0.0-SHA256.txt` | 校验文件 | 用于校验发布资产完整性 |
+| `SnipX-1.1.0.zip` | 完整包 | 包含程序、README、用户手册和更新日志 |
+| `SnipX-1.1.0-SHA256.txt` | 校验文件 | 用于校验发布资产完整性 |
 
 > 当前 Release 工作流发布便携版和 ZIP 包；安装器脚本已在仓库中提供，但暂未作为正式 Release 资产上传。
+
+---
+
+## 本版本重点更新
+
+### 快捷键与操作体验
+
+- 编辑器支持数字键 `1`-`9`、`0` 快速切换 10 种标注工具。
+- 删除标注同时支持 `Delete` 和 `Backspace`。
+- 贴图窗口支持：
+  - `Ctrl+C` 复制贴图到剪贴板。
+  - `Ctrl+S` 保存贴图为文件。
+  - `Esc` 快速关闭贴图窗口。
+- 取色器支持 `C` 键复制当前显示模式的颜色值。
+- 截图过程中可按 `R` / `H` 直接进入取色器。
+- 托盘菜单新增“取色器”入口。
+
+### 稳定性与安全修复
+
+- 修复 Logger 格式化字符串安全问题。
+- 修复滚动截图中屏幕位图为空时可能触发的问题。
+- 修复热键注册状态返回逻辑。
+- 修复编辑器底部工具栏按钮数量与实际功能不一致的问题。
+
+### 文档与发布流程
+
+- 统一快捷键说明：`Alt + X` 区域截图、`Alt + F` 全屏截图、`Shift + Alt + X` 复用上次选区。
+- 统一标注工具数量说明为 10 种。
+- 修正文档中的 GitHub 仓库链接和下载说明。
+- 优化 VitePress 文档配置，新增基础图标、Logo 和首页素材。
+- 修复 GitHub Pages 文档部署流程。
+- 修复 GitHub Actions CMake 构建流程，改用 Ninja 生成器以兼容新版 Visual Studio 环境。
+- 修复 CMake 构建产物路径检查和 artifact 上传路径。
 
 ---
 
@@ -38,6 +71,7 @@ SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级 Win
 - 矩形、椭圆、箭头、直线、铅笔、文字。
 - 马赛克、模糊、高亮、序号标签。
 - 标注对象选择、移动、删除、撤销/重做。
+- 支持数字键快速切换标注工具。
 - 工具栏、颜色选择器、粗细选择器和悬停提示。
 - 保存为 PNG/JPG/BMP，支持 JPG 质量配置。
 - 复制到剪贴板，支持双击复制并退出。
@@ -60,9 +94,9 @@ SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级 Win
 ### 工程化
 
 - 支持 MSVC、MinGW-w64 和 CMake 构建。
-- GitHub Actions 自动构建与发布。
+- GitHub Actions 自动构建、文档部署与发布。
 - Inno Setup 安装脚本已提供，便于后续发布安装版。
-- VitePress 文档站目录已提供，便于后续部署官网文档。
+- VitePress 文档站已部署到 GitHub Pages 分支。
 
 ---
 
@@ -72,20 +106,23 @@ SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级 Win
 | --- | --- |
 | `Alt + X` | 区域截图 |
 | `Alt + F` | 全屏截图 |
-| `Esc` | 取消截图或关闭编辑器 |
+| `Shift + Alt + X` | 复用上次选区 |
+| `Esc` | 取消截图、关闭编辑器或关闭贴图窗口 |
 | `Enter` | 确认截图选区 |
-| `Ctrl + S` | 保存截图 |
-| `Ctrl + C` | 复制截图 |
+| `Ctrl + S` | 保存截图 / 保存贴图 |
+| `Ctrl + C` | 复制截图 / 复制贴图 |
 | `Ctrl + Z / Ctrl + Y` | 撤销 / 重做 |
-| `Delete` | 删除选中标注 |
-| `R / H` | 取色器显示模式切换 |
+| `Delete / Backspace` | 删除选中标注 |
+| `1`-`9`、`0` | 编辑器中快速切换标注工具 |
+| `R / H` | 取色器显示模式切换；截图过程中进入取色器 |
+| `C` | 取色器复制当前显示模式的颜色值 |
 | `1 / 2 / 3 / 4` | 取色器复制 HEX / RGB / HSL / HSV |
 
 ---
 
 ## 快速开始
 
-1. 从本 Release 下载 `SnipX.exe` 或 `SnipX-1.0.0.zip`。
+1. 从本 Release 下载 `SnipX.exe` 或 `SnipX-1.1.0.zip`。
 2. 如果下载的是 ZIP 包，先解压到任意目录。
 3. 双击运行 `SnipX.exe`。
 4. 程序启动后驻留系统托盘。
@@ -118,18 +155,18 @@ SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级 Win
 
 ## 校验
 
-Release 工作流会生成 `SnipX-1.0.0-SHA256.txt`。下载后可在 PowerShell 中使用：
+Release 工作流会生成 `SnipX-1.1.0-SHA256.txt`。下载后可在 PowerShell 中使用：
 
 ```powershell
 Get-FileHash .\SnipX.exe -Algorithm SHA256
-Get-FileHash .\SnipX-1.0.0.zip -Algorithm SHA256
+Get-FileHash .\SnipX-1.1.0.zip -Algorithm SHA256
 ```
 
-将输出值与 `SnipX-1.0.0-SHA256.txt` 中的 SHA256 值比对即可。
+将输出值与 `SnipX-1.1.0-SHA256.txt` 中的 SHA256 值比对即可。
 
 ---
 
 ## 完整变更
 
 - [CHANGELOG.md](https://github.com/Vogadero/SnipX/blob/main/CHANGELOG.md)
-- [v1.0.0 提交历史](https://github.com/Vogadero/SnipX/commits/v1.0.0)
+- [v1.1.0 提交历史](https://github.com/Vogadero/SnipX/commits/v1.1.0)

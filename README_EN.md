@@ -132,15 +132,18 @@ For detailed build instructions, see [COMPILE.md](COMPILE.md)
 
 ## 🎯 Roadmap
 
-### v1.0.0 - Initial Release (Current)
+### v1.1.0 - Enhancement (Current)
+- ✅ Number keys to switch annotation tools
+- ✅ Pin window shortcuts: `Ctrl+C`, `Ctrl+S`, `Esc`
+- ✅ Color picker `C` key to copy the current display mode
+- ✅ `R` / `H` to enter the color picker from capture mode
+- ✅ Logger format string security fix
+- ✅ Scroll capture null pointer and hotkey registration fixes
+
+### v1.0.0 - Initial Release
 - ✅ All core features
 - ✅ Complete documentation
 - ✅ Release system
-
-### v1.1.0 - Enhancement
-- User feedback improvements
-- Performance optimization
-- Bug fixes
 
 ### v2.0.0 - Advanced
 - Plugin system
