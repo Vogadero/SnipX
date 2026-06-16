@@ -44,7 +44,7 @@ echo 极致轻量的 Windows 截图工具 >> "release\SnipX-%VERSION%\VERSION.tx
 echo. >> "release\SnipX-%VERSION%\VERSION.txt"
 echo 功能特性: >> "release\SnipX-%VERSION%\VERSION.txt"
 echo - 区域截图、全屏截图、窗口截图 >> "release\SnipX-%VERSION%\VERSION.txt"
-echo - 8 种标注工具（矩形、椭圆、箭头、铅笔、文字、直线、马赛克、模糊） >> "release\SnipX-%VERSION%\VERSION.txt"
+echo - 10 种标注工具（矩形、椭圆、箭头、铅笔、文字、直线、序号、高亮、马赛克、模糊） >> "release\SnipX-%VERSION%\VERSION.txt"
 echo - 取色器（RGB/HSL/HEX） >> "release\SnipX-%VERSION%\VERSION.txt"
 echo - 贴图功能 >> "release\SnipX-%VERSION%\VERSION.txt"
 echo - 多格式保存（PNG/JPG/BMP） >> "release\SnipX-%VERSION%\VERSION.txt"

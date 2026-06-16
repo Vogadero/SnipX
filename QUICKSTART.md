@@ -180,7 +180,7 @@ perf: 优化绘制性能
 - 📖 阅读文档：`docs/` 目录
 - 💬 提问讨论：GitHub Discussions
 - 🐛 报告 Bug：GitHub Issues
-- 📧 联系作者：（待添加）
+- 📧 联系作者：通过 GitHub Issues 或 Discussions
 
 ---
 

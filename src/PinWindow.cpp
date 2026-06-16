@@ -2,8 +2,15 @@
 
 #include "PinWindow.h"
 #include "SnipX.h"
+#include "Localization.h"
 #include <algorithm>
+#include <cstdlib>
+#include <cwchar>
+#include <shlobj.h>
+#include <shlwapi.h>
 #include <windowsx.h>
+
+#pragma comment(lib, "shlwapi.lib")
 
 namespace
 {
@@ -220,6 +227,100 @@ int PinWindow::ClampSize(int value, int minValue, int maxValue) const
     return (std::max)(minValue, (std::min)(value, maxValue));
 }
 
+void PinWindow::CopyToClipboard(HWND hwndOwner)
+{
+    if (!m_pBitmap)
+        return;
+
+    HBITMAP hBitmap = NULL;
+    m_pBitmap->GetHBITMAP(Color(255, 255, 255), &hBitmap);
+    if (!hBitmap)
+        return;
+
+    if (OpenClipboard(hwndOwner))
+    {
+        EmptyClipboard();
+        SetClipboardData(CF_BITMAP, hBitmap);
+        CloseClipboard();
+        MessageBoxW(hwndOwner, L10n(L"已复制贴图到剪贴板！", L"Pinned image copied to clipboard!"), L"SnipX", MB_ICONINFORMATION);
+    }
+    else
+    {
+        DeleteObject(hBitmap);
+    }
+}
+
+void PinWindow::SaveImage(HWND hwndOwner)
+{
+    if (!m_pBitmap)
+        return;
+
+    Config* cfg = m_pApp ? m_pApp->GetConfig() : nullptr;
+    WCHAR filename[MAX_PATH] = L"";
+
+    SYSTEMTIME st;
+    GetLocalTime(&st);
+    const WCHAR* prefix = cfg ? cfg->GetFileNamePrefix().c_str() : L"SnipX";
+    swprintf_s(filename, L"%s_pin_%04d%02d%02d_%02d%02d%02d.png",
+              prefix, st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+
+    OPENFILENAMEW ofn = { 0 };
+    ofn.lStructSize = sizeof(OPENFILENAMEW);
+    ofn.hwndOwner = hwndOwner;
+    ofn.lpstrFilter = L"PNG 图片 (*.png)\0*.png\0所有文件 (*.*)\0*.*\0";
+    ofn.lpstrFile = filename;
+    ofn.nMaxFile = MAX_PATH;
+    if (cfg)
+    {
+        ofn.lpstrInitialDir = cfg->GetDefaultPath().c_str();
+    }
+    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
+    ofn.lpstrDefExt = L"png";
+
+    if (!GetSaveFileNameW(&ofn))
+        return;
+
+    CLSID encoderClsid;
+    UINT num = 0;
+    UINT size = 0;
+    GetImageEncodersSize(&num, &size);
+    if (size == 0)
+        return;
+
+    ImageCodecInfo* pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
+    if (!pImageCodecInfo)
+        return;
+
+    bool saved = false;
+    if (GetImageEncoders(num, size, pImageCodecInfo) == Ok)
+    {
+        for (UINT i = 0; i < num; i++)
+        {
+            if (wcscmp(pImageCodecInfo[i].MimeType, L"image/png") == 0)
+            {
+                encoderClsid = pImageCodecInfo[i].Clsid;
+                saved = m_pBitmap->Save(filename, &encoderClsid, NULL) == Ok;
+                break;
+            }
+        }
+    }
+
+    free(pImageCodecInfo);
+
+    if (!saved)
+    {
+        MessageBoxW(hwndOwner, L10n(L"保存贴图失败，请检查路径。", L"Failed to save pinned image. Please check the path."), L"SnipX", MB_ICONERROR);
+        return;
+    }
+
+    if (cfg)
+    {
+        cfg->AddHistoryItem(filename);
+        cfg->Save();
+    }
+    MessageBoxW(hwndOwner, L10n(L"贴图保存成功！", L"Pinned image saved!"), L"SnipX", MB_ICONINFORMATION);
+}
+
 LRESULT CALLBACK PinWindow::PinWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     if (msg == WM_CREATE)
@@ -316,7 +417,31 @@ LRESULT CALLBACK PinWindow::PinWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
         }
         return 0;
     }
-    
+
+    case WM_KEYDOWN:
+    {
+        if (pThis)
+        {
+            bool ctrlDown = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
+            if (wParam == VK_ESCAPE)
+            {
+                pThis->Close();
+                return 0;
+            }
+            if (ctrlDown && wParam == 'C')
+            {
+                pThis->CopyToClipboard(hwnd);
+                return 0;
+            }
+            if (ctrlDown && wParam == 'S')
+            {
+                pThis->SaveImage(hwnd);
+                return 0;
+            }
+        }
+        break;
+    }
+
     case WM_COMMAND:
     {
         if (pThis)

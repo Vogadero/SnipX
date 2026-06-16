@@ -71,6 +71,7 @@ void TrayIcon::ShowContextMenu()
     AppendMenuW(hMenu, MF_STRING, IDM_CAPTURE, L"截图 (Alt+X)");
     AppendMenuW(hMenu, MF_STRING, IDM_SCROLL_CAPTURE, L"滚动截图");
     AppendMenuW(hMenu, MF_STRING, IDM_TOGGLE_RECORDING, m_pApp->IsRecording() ? L"停止录屏" : L"开始录屏");
+    AppendMenuW(hMenu, MF_STRING, IDM_COLOR_PICKER, L"取色器");
     AppendMenuW(hMenu, MF_STRING, IDM_PIN_CLIPBOARD, L"剪贴板贴图");
 
     AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
@@ -165,6 +166,9 @@ LRESULT CALLBACK TrayIcon::TrayWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
                 break;
             case IDM_TOGGLE_RECORDING:
                 pThis->m_pApp->ToggleRecording();
+                break;
+            case IDM_COLOR_PICKER:
+                pThis->m_pApp->StartColorPicker();
                 break;
             case IDM_PIN_CLIPBOARD:
 

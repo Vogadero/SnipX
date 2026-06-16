@@ -16,7 +16,7 @@
 如果你发现了 SnipX 的安全漏洞，请**不要**公开披露。请通过以下方式私下报告：
 
 1. **邮件报告**（推荐）
-   - 发送邮件到：security@snipx.example.com
+   - 通过 GitHub Security Advisory 报告，或在 Issues 中请求维护者开启私下沟通渠道
    - 主题：[Security] 简要描述漏洞
    - 内容包括：
      - 漏洞详细描述
@@ -25,7 +25,7 @@
      - 建议的修复方案（如果有）
 
 2. **GitHub Security Advisory**
-   - 访问：https://github.com/yourusername/SnipX/security/advisories
+   - 访问：https://github.com/vogadero/SnipX/security/advisories
    - 点击 "Report a vulnerability"
    - 填写漏洞详情
 
@@ -104,7 +104,7 @@
 
 我们欢迎安全研究人员审计 SnipX 的代码：
 
-- 源代码：https://github.com/yourusername/SnipX
+- 源代码：https://github.com/vogadero/SnipX
 - 许可证：MIT License
 - 审计范围：所有功能和代码
 
@@ -115,7 +115,7 @@
 If you discover a security vulnerability in SnipX, please **do not** disclose it publicly. Report it privately through:
 
 1. **Email** (Recommended)
-   - Send to: security@snipx.example.com
+   - Report through GitHub Security Advisory, or open an issue asking maintainers to establish a private channel
    - Subject: [Security] Brief description
    - Include:
      - Detailed description
@@ -124,7 +124,7 @@ If you discover a security vulnerability in SnipX, please **do not** disclose it
      - Suggested fix (if any)
 
 2. **GitHub Security Advisory**
-   - Visit: https://github.com/yourusername/SnipX/security/advisories
+   - Visit: https://github.com/vogadero/SnipX/security/advisories
    - Click "Report a vulnerability"
    - Fill in the details
 

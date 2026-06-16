@@ -28,6 +28,8 @@ private:
     void ShowContextMenu();
     void SetOpacity(int opacity);
     void SetMouseThrough(bool through);
+    void CopyToClipboard(HWND hwndOwner);
+    void SaveImage(HWND hwndOwner);
     /**
      * 根据滚轮方向缩放贴图窗口，并保持原图宽高比例。
      *

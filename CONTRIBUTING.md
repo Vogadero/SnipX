@@ -6,7 +6,7 @@
 
 ### 报告 Bug
 
-如果你发现了 Bug，请在 [GitHub Issues](https://github.com/yourusername/SnipX/issues) 创建一个 issue，并包含以下信息：
+如果你发现了 Bug，请在 [GitHub Issues](https://github.com/vogadero/SnipX/issues) 创建一个 issue，并包含以下信息：
 
 1. **Bug 描述**：清晰简洁地描述问题
 2. **复现步骤**：详细的复现步骤
@@ -226,9 +226,8 @@ cmake --build . --config Release
 
 如果你有任何问题，可以：
 
-1. 查看 [FAQ](https://github.com/yourusername/SnipX/wiki/FAQ)
-2. 在 [Discussions](https://github.com/yourusername/SnipX/discussions) 提问
-3. 发送邮件到 your.email@example.com
+1. 查看 [FAQ](https://github.com/vogadero/SnipX/wiki/FAQ)
+2. 在 [Discussions](https://github.com/vogadero/SnipX/discussions) 提问
 
 ## 致谢
 
@@ -236,7 +235,7 @@ cmake --build . --config Release
 
 ### 贡献者列表
 
-查看 [Contributors](https://github.com/yourusername/SnipX/graphs/contributors)
+查看 [Contributors](https://github.com/vogadero/SnipX/graphs/contributors)
 
 ---
 

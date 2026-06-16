@@ -4,52 +4,47 @@
 
 ### v1.0.0（2024-01-15）
 
-这是 SnipX 的首个正式版本！
+这是 SnipX 的首个正式版本。
 
 ---
 
 ## 💾 下载选项
 
-### 推荐下载
-
-<div class="download-cards">
-
-#### 🚀 单文件版本（推荐）
+### 🚀 单文件版本（推荐）
 
 **SnipX.exe**
 
-- 体积：< 1MB
-- 无需安装，解压即用
+- 体积目标：< 1MB
+- 无需安装，下载即用
 - 适合便携使用
 
 <a href="https://github.com/vogadero/SnipX/releases/download/v1.0.0/SnipX.exe" class="download-button">下载 SnipX.exe</a>
 
 ---
 
-#### 📦 安装程序
-
-**SnipX-1.0.0-Setup.exe**
-
-- 体积：~1.5MB
-- 完整的安装向导
-- 可选开机自启
-- 可选桌面快捷方式
-
-<a href="https://github.com/vogadero/SnipX/releases/download/v1.0.0/SnipX-1.0.0-Setup.exe" class="download-button">下载安装程序</a>
-
----
-
-#### 📁 完整包
+### 📁 完整包
 
 **SnipX-1.0.0.zip**
 
-- 体积：~2MB
-- 包含程序和文档
-- 适合离线使用
+- 包含程序和离线文档
+- 适合归档、离线使用和分发
 
 <a href="https://github.com/vogadero/SnipX/releases/download/v1.0.0/SnipX-1.0.0.zip" class="download-button">下载完整包</a>
 
-</div>
+---
+
+### 🔒 校验文件
+
+**SnipX-1.0.0-SHA256.txt**
+
+- 包含 Release 资产的 SHA256 校验和
+- 用于验证下载文件完整性
+
+<a href="https://github.com/vogadero/SnipX/releases/download/v1.0.0/SnipX-1.0.0-SHA256.txt" class="download-button">下载 SHA256 校验文件</a>
+
+::: tip 安装版说明
+仓库提供了 `installer.iss` 作为 Inno Setup 安装脚本，便于后续制作安装包；当前 GitHub Release workflow 上传的是便携 exe、zip 和 SHA256 文件。
+:::
 
 ---
 
@@ -58,9 +53,9 @@
 ### 最低要求
 
 - **操作系统**：Windows 7 或更高版本
-- **架构**：x64
+- **架构**：x86 或 x64，推荐 x64
 - **内存**：2GB RAM
-- **磁盘空间**：< 5MB
+- **磁盘空间**：< 5MB（不含截图存储）
 
 ### 推荐配置
 
@@ -71,39 +66,22 @@
 
 ### 依赖项
 
-- ✅ 无需安装任何依赖
-- ✅ 使用系统自带的 GDI+
+- ✅ 使用系统自带 Win32 API、GDI+ 和 Common Controls
+- ✅ 便携版无需额外安装运行时
 - ✅ 纯绿色软件
 
 ---
 
-## 🚀 安装指南
+## 🚀 使用指南
 
 ### 使用单文件版本
 
 1. **下载** `SnipX.exe`
 2. **运行** 双击 `SnipX.exe`
-3. **开始使用** 按 `F1` 或 `Ctrl+Alt+A` 开始截图
+3. **开始使用** 按 `Alt+X` 开始区域截图，或按 `Alt+F` 进行全屏截图
 
 ::: tip 提示
-单文件版本无需安装，可以放在任意位置运行。建议放在一个固定的文件夹中，方便管理配置文件。
-:::
-
----
-
-### 使用安装程序
-
-1. **下载** `SnipX-1.0.0-Setup.exe`
-2. **运行** 双击安装程序
-3. **安装** 按照向导完成安装
-   - 选择安装位置
-   - 可选：创建桌面快捷方式
-   - 可选：开机自动启动
-4. **启动** 从开始菜单或桌面快捷方式启动
-5. **开始使用** 按 `F1` 或 `Ctrl+Alt+A` 开始截图
-
-::: tip 提示
-安装程序会自动创建开始菜单项和卸载程序，方便管理。
+单文件版本无需安装，可以放在任意位置运行。建议放在固定文件夹中，方便管理程序和更新。
 :::
 
 ---
@@ -111,21 +89,15 @@
 ### 使用完整包
 
 1. **下载** `SnipX-1.0.0.zip`
-2. **解压** 解压到任意位置
+2. **解压** 到任意位置
 3. **运行** 双击 `SnipX.exe`
-4. **查看文档** 查看包含的文档了解更多功能
-
-::: tip 提示
-完整包包含所有文档，适合离线查看和学习。
-:::
+4. **查看文档** 阅读随包文档了解更多功能
 
 ---
 
 ## 🔄 更新说明
 
-### 如何更新
-
-#### 手动更新
+### 手动更新
 
 1. 下载最新版本
 2. 关闭正在运行的 SnipX
@@ -133,17 +105,8 @@
 4. 重新启动 SnipX
 
 ::: warning 注意
-配置文件会自动保留，无需备份。配置文件位置：
-- 单文件版本：程序所在目录的 `config.ini`
-- 安装版本：`%APPDATA%\SnipX\config.ini`
+配置文件会自动保留，无需备份。配置文件位置：`%APPDATA%\SnipX\config.ini`。
 :::
-
-#### 自动更新（未来版本）
-
-未来版本将支持自动更新功能：
-- 程序会自动检查更新
-- 提示下载新版本
-- 一键更新
 
 ---
 
@@ -155,21 +118,21 @@
 
 **新功能**：
 - ✅ 完整的截图功能（区域/全屏/窗口/滚动）
-- ✅ 9 种标注工具
+- ✅ 10 种标注工具
 - ✅ 完整的编辑功能
 - ✅ 多格式保存（PNG/JPG/BMP）
 - ✅ 取色器功能
 - ✅ 贴图功能
-- ✅ 录屏功能
+- ✅ 录屏帧序列功能
 - ✅ 多语言支持
 
 **性能**：
-- ✅ 体积 < 1MB
-- ✅ 启动 < 500ms
-- ✅ 内存 < 10MB
-- ✅ CPU < 1%
+- ✅ 体积目标 < 1MB
+- ✅ 启动目标 < 500ms
+- ✅ 空闲内存目标 < 10MB
+- ✅ 空闲 CPU 目标 < 1%
 
-查看完整的 [更新日志](https://github.com/vogadero/SnipX/blob/main/CHANGELOG.md)
+查看完整的 [更新日志](https://github.com/vogadero/SnipX/blob/main/CHANGELOG.md)。
 
 ---
 
@@ -177,24 +140,20 @@
 
 ### 文件校验
 
-为确保下载的文件完整且未被篡改，可以验证文件的 SHA256 校验和：
-
-```
-SnipX.exe: [待添加]
-SnipX-1.0.0-Setup.exe: [待添加]
-SnipX-1.0.0.zip: [待添加]
-```
-
-### 如何验证
+请下载同版本的 `SnipX-1.0.0-SHA256.txt`，并将其中的哈希值与本地文件计算结果比对。
 
 **Windows PowerShell**：
+
 ```powershell
 Get-FileHash SnipX.exe -Algorithm SHA256
+Get-FileHash SnipX-1.0.0.zip -Algorithm SHA256
 ```
 
 **命令提示符**：
+
 ```cmd
 certutil -hashfile SnipX.exe SHA256
+certutil -hashfile SnipX-1.0.0.zip SHA256
 ```
 
 ---
@@ -205,26 +164,18 @@ certutil -hashfile SnipX.exe SHA256
 
 如果 GitHub 下载速度慢，可以尝试：
 
-1. **使用镜像站**（如果有）
-2. **使用下载工具**（如 IDM、迅雷等）
-3. **使用代理或 VPN**
-
-### 下载失败
-
-如果下载失败，可以：
-
-1. **刷新页面重试**
-2. **清除浏览器缓存**
-3. **更换浏览器**
-4. **检查网络连接**
+1. 刷新页面重试
+2. 更换浏览器
+3. 检查网络连接
+4. 使用可信网络环境重新下载
 
 ### 文件损坏
 
 如果下载的文件无法运行：
 
-1. **重新下载**
-2. **验证文件校验和**
-3. **检查杀毒软件是否误报**
+1. 重新下载
+2. 验证 SHA256 校验和
+3. 检查杀毒软件是否误报
 
 ---
 
@@ -240,20 +191,6 @@ certutil -hashfile SnipX.exe SHA256
 ::: danger 警告
 请勿从非官方渠道下载 SnipX，以免下载到被篡改的版本。
 :::
-
-### 杀毒软件误报
-
-部分杀毒软件可能会误报 SnipX 为病毒，这是因为：
-
-1. SnipX 使用了全局热键
-2. SnipX 需要截取屏幕
-3. SnipX 是新发布的软件
-
-如果遇到误报，可以：
-
-1. **添加到白名单**
-2. **暂时关闭杀毒软件**
-3. **从源代码自行编译**
 
 ---
 
@@ -274,16 +211,16 @@ certutil -hashfile SnipX.exe SHA256
 
 3. **运行**
    ```cmd
-   SnipX.exe
+   bin\SnipX.exe
    ```
 
-查看详细的 [编译指南](/guide/compile)
+查看详细的 [编译指南](https://github.com/vogadero/SnipX/blob/main/COMPILE.md)。
 
 ---
 
 ## 📞 获取帮助
 
-如果在下载或安装过程中遇到问题：
+如果在下载或使用过程中遇到问题：
 
 - 📖 查看 [快速开始](/guide/getting-started)
 - 🐛 [报告问题](https://github.com/vogadero/SnipX/issues)
@@ -298,12 +235,6 @@ certutil -hashfile SnipX.exe SHA256
 </div>
 
 <style>
-.download-cards {
-  display: grid;
-  gap: 20px;
-  margin: 20px 0;
-}
-
 .download-button {
   display: inline-block;
   padding: 10px 24px;

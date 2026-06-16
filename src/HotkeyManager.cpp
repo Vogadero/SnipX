@@ -67,7 +67,7 @@ bool HotkeyManager::RegisterHotkey(UINT hotkey)
     bool fullScreenRegistered = ::RegisterHotKey(m_hwnd, HOTKEY_ID_FULLSCREEN, fullScreenModifiers, LOBYTE(fullScreenHotkey)) != 0;
 
     m_registered = screenshotRegistered || fullScreenRegistered;
-    return screenshotRegistered;
+    return m_registered;
 }
 
 void HotkeyManager::UnregisterHotkey()

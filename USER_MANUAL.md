@@ -59,7 +59,7 @@
 
 ### 2. 标注工具
 
-截图完成后进入编辑器，提供 8 种标注工具：
+截图完成后进入编辑器，提供 10 种标注工具：
 
 #### 矩形工具
 - 绘制矩形标注框
@@ -88,6 +88,14 @@
 - 添加文字标注
 - 支持字体、字号、颜色设置
 - 可拖拽移动文字框
+
+#### 序号标签工具
+- 添加自动递增的序号标签
+- 适合标注步骤和说明顺序
+
+#### 高亮工具
+- 使用半透明颜色突出重点区域
+- 适合强调文本或界面区域
 
 #### 马赛克工具
 - 矩形区域像素化模糊
@@ -398,9 +406,9 @@ Alt+X → 拖拽选区 → Enter → 标注 → Ctrl+C → Esc
 
 ### 获取帮助
 - 用户手册：本文档
-- 在线文档：https://snipx.example.com/docs
-- GitHub：https://github.com/example/snipx
-- 邮箱：support@example.com
+- 在线文档：https://vogadero.github.io/SnipX/
+- GitHub：https://github.com/vogadero/SnipX
+- Issues：https://github.com/vogadero/SnipX/issues
 
 ---
 

@@ -114,7 +114,7 @@ void Logger::Debug(const wchar_t* format, ...)
     vswprintf_s(buffer, 4096, format, args);
     va_end(args);
     
-    Log(LOG_DEBUG, buffer);
+    Log(LOG_DEBUG, L"%s", buffer);
 }
 
 void Logger::Info(const wchar_t* format, ...)
@@ -128,7 +128,7 @@ void Logger::Info(const wchar_t* format, ...)
     vswprintf_s(buffer, 4096, format, args);
     va_end(args);
     
-    Log(LOG_INFO, buffer);
+    Log(LOG_INFO, L"%s", buffer);
 }
 
 void Logger::Warning(const wchar_t* format, ...)
@@ -142,7 +142,7 @@ void Logger::Warning(const wchar_t* format, ...)
     vswprintf_s(buffer, 4096, format, args);
     va_end(args);
     
-    Log(LOG_WARNING, buffer);
+    Log(LOG_WARNING, L"%s", buffer);
 }
 
 void Logger::Error(const wchar_t* format, ...)
@@ -156,7 +156,7 @@ void Logger::Error(const wchar_t* format, ...)
     vswprintf_s(buffer, 4096, format, args);
     va_end(args);
     
-    Log(LOG_ERROR, buffer);
+    Log(LOG_ERROR, L"%s", buffer);
 }
 
 std::wstring Logger::GetTimestamp()

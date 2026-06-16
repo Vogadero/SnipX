@@ -158,7 +158,7 @@ public:
 
 ```ini
 [General]
-Hotkey=0x0000F1A1
+Hotkey=0x00005804
 StartupMode=0
 AutoStart=0
 TrayIconVisible=1
@@ -778,9 +778,9 @@ SnipX 采用 MIT 许可证，详见 LICENSE 文件。
 
 ## 联系方式
 
-- GitHub: https://github.com/yourusername/SnipX
-- Issues: https://github.com/yourusername/SnipX/issues
-- Email: your.email@example.com
+- GitHub: https://github.com/vogadero/SnipX
+- Issues: https://github.com/vogadero/SnipX/issues
+- Email: 请通过 GitHub Issues 或 Discussions 联系维护者
 
 ---
 
