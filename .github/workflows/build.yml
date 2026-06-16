@@ -114,14 +114,10 @@ jobs:
 
     - name: Configure CMake
       run: |
-        mkdir build
-        cd build
-        cmake .. -G "Visual Studio 17 2022" -A x64
+        cmake -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
     
     - name: Build with CMake
-      run: |
-        cd build
-        cmake --build . --config Release
+      run: cmake --build build --config Release
     
     - name: Check build output
       run: |
