@@ -132,7 +132,10 @@ For detailed build instructions, see [COMPILE.md](COMPILE.md)
 
 ## 🎯 Roadmap
 
-### v1.1.0 - Enhancement (Current)
+### v1.1.1 - Portable Startup Fix (Current)
+- ✅ Fixed portable Windows manifest architecture declaration to avoid the "side-by-side configuration is incorrect" startup error
+
+### v1.1.0 - Enhancement
 - ✅ Number keys to switch annotation tools
 - ✅ Pin window shortcuts: `Ctrl+C`, `Ctrl+S`, `Esc`
 - ✅ Color picker `C` key to copy the current display mode

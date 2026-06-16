@@ -1,4 +1,4 @@
-# SnipX v1.1.0 - 快捷键增强与构建修复
+# SnipX v1.1.1 - 便携版启动修复
 
 **发布日期**：2026-06-16
 
@@ -6,7 +6,7 @@
 
 **许可协议**：MIT License
 
-SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级 Windows 截图工具，聚焦快速截图、标注、贴图、取色、录屏与便携发布。v1.1.0 在 v1.0.0 首个正式版本基础上，补齐了多项高频快捷键操作，修复了安全与稳定性问题，并完善了文档站和 GitHub Actions 发布流程。
+SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级 Windows 截图工具，聚焦快速截图、标注、贴图、取色、录屏与便携发布。v1.1.1 是 v1.1.0 的热修复版本，修复便携版 Windows manifest 主程序集架构声明，避免启动时报“应用程序的并行配置不正确”。v1.1.x 在 v1.0.0 首个正式版本基础上，补齐了多项高频快捷键操作，修复了安全与稳定性问题，并完善了文档站和 GitHub Actions 发布流程。
 
 ---
 
@@ -15,14 +15,18 @@ SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级 Win
 | 文件 | 适用场景 | 说明 |
 | --- | --- | --- |
 | `SnipX.exe` | 便携版 | 下载后直接运行，无需安装 |
-| `SnipX-1.1.0.zip` | 完整包 | 包含程序、README、用户手册和更新日志 |
-| `SnipX-1.1.0-SHA256.txt` | 校验文件 | 用于校验发布资产完整性 |
+| `SnipX-1.1.1.zip` | 完整包 | 包含程序、README、用户手册和更新日志 |
+| `SnipX-1.1.1-SHA256.txt` | 校验文件 | 用于校验发布资产完整性 |
 
 > 当前 Release 工作流发布便携版和 ZIP 包；安装器脚本已在仓库中提供，但暂未作为正式 Release 资产上传。
 
 ---
 
 ## 本版本重点更新
+
+### v1.1.1 热修复
+
+- 修复便携版 Windows manifest 主程序集 `processorArchitecture` 声明，避免启动时报“应用程序的并行配置不正确”。
 
 ### 快捷键与操作体验
 
@@ -122,7 +126,7 @@ SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级 Win
 
 ## 快速开始
 
-1. 从本 Release 下载 `SnipX.exe` 或 `SnipX-1.1.0.zip`。
+1. 从本 Release 下载 `SnipX.exe` 或 `SnipX-1.1.1.zip`。
 2. 如果下载的是 ZIP 包，先解压到任意目录。
 3. 双击运行 `SnipX.exe`。
 4. 程序启动后驻留系统托盘。
@@ -155,18 +159,18 @@ SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级 Win
 
 ## 校验
 
-Release 工作流会生成 `SnipX-1.1.0-SHA256.txt`。下载后可在 PowerShell 中使用：
+Release 工作流会生成 `SnipX-1.1.1-SHA256.txt`。下载后可在 PowerShell 中使用：
 
 ```powershell
 Get-FileHash .\SnipX.exe -Algorithm SHA256
-Get-FileHash .\SnipX-1.1.0.zip -Algorithm SHA256
+Get-FileHash .\SnipX-1.1.1.zip -Algorithm SHA256
 ```
 
-将输出值与 `SnipX-1.1.0-SHA256.txt` 中的 SHA256 值比对即可。
+将输出值与 `SnipX-1.1.1-SHA256.txt` 中的 SHA256 值比对即可。
 
 ---
 
 ## 完整变更
 
 - [CHANGELOG.md](https://github.com/Vogadero/SnipX/blob/main/CHANGELOG.md)
-- [v1.1.0 提交历史](https://github.com/Vogadero/SnipX/commits/v1.1.0)
+- [v1.1.1 提交历史](https://github.com/Vogadero/SnipX/commits/v1.1.1)
