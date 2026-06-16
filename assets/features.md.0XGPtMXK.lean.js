@@ -1,0 +1,1 @@
+import{_ as e,o as l,c as i,a2 as r}from"./chunks/framework.xlC3Vtar.js";const p=JSON.parse('{"title":"功能特性","description":"","frontmatter":{},"headers":[],"relativePath":"features.md","filePath":"features.md"}'),o={name:"features.md"};function h(t,a,d,n,c,s){return l(),i("div",null,[...a[0]||(a[0]=[r("",122)])])}const b=e(o,[["render",h]]);export{p as __pageData,b as default};

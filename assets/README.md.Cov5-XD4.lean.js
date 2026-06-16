@@ -1,0 +1,1 @@
+import{_ as s,o as e,c as i,a2 as n}from"./chunks/framework.xlC3Vtar.js";const k=JSON.parse('{"title":"SnipX 文档网站","description":"","frontmatter":{},"headers":[],"relativePath":"README.md","filePath":"README.md"}'),t={name:"README.md"};function l(p,a,o,h,r,d){return e(),i("div",null,[...a[0]||(a[0]=[n("",39)])])}const g=s(t,[["render",l]]);export{k as __pageData,g as default};
