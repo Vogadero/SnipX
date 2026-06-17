@@ -37,7 +37,7 @@ REM 编译资源文件
 rc /fo obj\SnipX.res res\SnipX.rc
 
 REM 编译源文件
-cl /c /O2 /GL /EHsc /MT /W3 /nologo ^
+cl /c /O2 /GL /EHsc /MT /utf-8 /W3 /nologo ^
    /I"src" ^
    /Fo"obj\\" ^
    src\main.cpp ^

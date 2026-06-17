@@ -1,4 +1,4 @@
-# SnipX v1.1.2 - 便携版启动修复
+# SnipX v1.1.3 - 便携版启动修复
 
 **发布日期**：2026-06-16
 
@@ -6,7 +6,7 @@
 
 **许可协议**：MIT License
 
-SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级 Windows 截图工具，聚焦快速截图、标注、贴图、取色、录屏与便携发布。v1.1.2 是 v1.1.0 的热修复版本，移除便携版 Windows manifest 中会导致激活上下文创建失败的兼容性声明，修复启动时报“应用程序的并行配置不正确”的问题。v1.1.x 在 v1.0.0 首个正式版本基础上，补齐了多项高频快捷键操作，修复了安全与稳定性问题，并完善了文档站和 GitHub Actions 发布流程。
+SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级 Windows 截图工具，聚焦快速截图、标注、贴图、取色、录屏与便携发布。v1.1.3 是 v1.1.0 的热修复版本，移除便携版 Windows manifest 中会导致激活上下文创建失败的兼容性声明，并修复 MSVC 构建缺少 `/utf-8` 编译选项导致界面中文乱码的问题。v1.1.x 在 v1.0.0 首个正式版本基础上，补齐了多项高频快捷键操作，修复了安全与稳定性问题，并完善了文档站和 GitHub Actions 发布流程。
 
 ---
 
@@ -15,8 +15,8 @@ SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级 Win
 | 文件 | 适用场景 | 说明 |
 | --- | --- | --- |
 | `SnipX.exe` | 便携版 | 下载后直接运行，无需安装 |
-| `SnipX-1.1.2.zip` | 完整包 | 包含程序、README、用户手册和更新日志 |
-| `SnipX-1.1.2-SHA256.txt` | 校验文件 | 用于校验发布资产完整性 |
+| `SnipX-1.1.3.zip` | 完整包 | 包含程序、README、用户手册和更新日志 |
+| `SnipX-1.1.3-SHA256.txt` | 校验文件 | 用于校验发布资产完整性 |
 
 > 当前 Release 工作流发布便携版和 ZIP 包；安装器脚本已在仓库中提供，但暂未作为正式 Release 资产上传。
 
@@ -24,9 +24,10 @@ SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级 Win
 
 ## 本版本重点更新
 
-### v1.1.2 热修复
+### v1.1.3 热修复
 
-- 移除便携版 Windows manifest 中会导致激活上下文创建失败的兼容性声明，修复启动时报“应用程序的并行配置不正确”的问题。
+- 移除便携版 Windows manifest 中会导致激活上下文创建失败的兼容性声明，修复启动时报"应用程序的并行配置不正确"的问题。
+- 修复 MSVC 构建缺少 `/utf-8` 编译选项导致程序界面中文显示乱码的问题。
 
 ### 快捷键与操作体验
 
@@ -38,7 +39,7 @@ SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级 Win
   - `Esc` 快速关闭贴图窗口。
 - 取色器支持 `C` 键复制当前显示模式的颜色值。
 - 截图过程中可按 `R` / `H` 直接进入取色器。
-- 托盘菜单新增“取色器”入口。
+- 托盘菜单新增"取色器"入口。
 
 ### 稳定性与安全修复
 
@@ -126,7 +127,7 @@ SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级 Win
 
 ## 快速开始
 
-1. 从本 Release 下载 `SnipX.exe` 或 `SnipX-1.1.2.zip`。
+1. 从本 Release 下载 `SnipX.exe` 或 `SnipX-1.1.3.zip`。
 2. 如果下载的是 ZIP 包，先解压到任意目录。
 3. 双击运行 `SnipX.exe`。
 4. 程序启动后驻留系统托盘。
@@ -159,18 +160,18 @@ SnipX 是一款基于纯 Win32 C++17、GDI+ 和系统 API 开发的轻量级 Win
 
 ## 校验
 
-Release 工作流会生成 `SnipX-1.1.2-SHA256.txt`。下载后可在 PowerShell 中使用：
+Release 工作流会生成 `SnipX-1.1.3-SHA256.txt`。下载后可在 PowerShell 中使用：
 
 ```powershell
 Get-FileHash .\SnipX.exe -Algorithm SHA256
-Get-FileHash .\SnipX-1.1.2.zip -Algorithm SHA256
+Get-FileHash .\SnipX-1.1.3.zip -Algorithm SHA256
 ```
 
-将输出值与 `SnipX-1.1.2-SHA256.txt` 中的 SHA256 值比对即可。
+将输出值与 `SnipX-1.1.3-SHA256.txt` 中的 SHA256 值比对即可。
 
 ---
 
 ## 完整变更
 
 - [CHANGELOG.md](https://github.com/Vogadero/SnipX/blob/main/CHANGELOG.md)
-- [v1.1.2 提交历史](https://github.com/Vogadero/SnipX/commits/v1.1.2)
+- [v1.1.3 提交历史](https://github.com/Vogadero/SnipX/commits/v1.1.3)

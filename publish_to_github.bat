@@ -32,7 +32,7 @@ if "%GITHUB_TOKEN%"=="" (
 REM 设置变量
 set GITHUB_USER=vogadero
 set REPO_NAME=SnipX
-set VERSION=1.1.2
+set VERSION=1.1.3
 set TAG=v%VERSION%
 
 echo GitHub 用户: %GITHUB_USER%

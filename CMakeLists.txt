@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(SnipX VERSION 1.1.2 LANGUAGES CXX)
+project(SnipX VERSION 1.1.3 LANGUAGES CXX)
 
 # 设置C++标准
 set(CMAKE_CXX_STANDARD 17)
@@ -15,7 +15,7 @@ if(WIN32)
     if(MSVC)
         # MSVC编译器优化；静态链接运行库，避免发布的便携版依赖目标机器安装 VC++ Runtime。
         set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-        add_compile_options(/O2 /GL /EHsc /W3)
+        add_compile_options(/utf-8 /O2 /GL /EHsc /W3)
         add_link_options(/LTCG /OPT:REF /OPT:ICF /SUBSYSTEM:WINDOWS)
     else()
         # MinGW编译器优化

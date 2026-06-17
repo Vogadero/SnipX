@@ -132,7 +132,11 @@ For detailed build instructions, see [COMPILE.md](COMPILE.md)
 
 ## 🎯 Roadmap
 
-### v1.1.2 - Portable Startup Fix (Current)
+### v1.1.3 - Portable Startup Fix (Current)
+- ✅ Removed the Windows manifest compatibility section that could make activation context creation fail and cause the "side-by-side configuration is incorrect" startup error
+- ✅ Fixed MSVC build missing `/utf-8` compile option causing Chinese text garbled in the UI
+
+### v1.1.2 - Portable Startup Fix
 - ✅ Removed the Windows manifest compatibility section that could make activation context creation fail and cause the "side-by-side configuration is incorrect" startup error
 
 ### v1.1.1 - Portable Startup Fix
