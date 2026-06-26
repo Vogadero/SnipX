@@ -132,7 +132,11 @@ For detailed build instructions, see [COMPILE.md](COMPILE.md)
 
 ## 🎯 Roadmap
 
-### v1.1.3 - Portable Startup Fix (Current)
+### v1.1.4 - Editor UI Polish (Current)
+- ✅ Optimized editor toolbar and bottom bar colors, borders, and fonts
+- ✅ Unified hover/selected states for better visual hierarchy
+
+### v1.1.3 - Portable Startup Fix
 - ✅ Removed the Windows manifest compatibility section that could make activation context creation fail and cause the "side-by-side configuration is incorrect" startup error
 - ✅ Fixed MSVC build missing `/utf-8` compile option causing Chinese text garbled in the UI
 

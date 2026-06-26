@@ -3,7 +3,7 @@
 ; 下载地址: https://jrsoftware.org/isinfo.php
 
 #define MyAppName "SnipX"
-#define MyAppVersion "1.1.3"
+#define MyAppVersion "1.1.4"
 #define MyAppPublisher "SnipX Team"
 #define MyAppURL "https://github.com/vogadero/SnipX"
 #define MyAppExeName "SnipX.exe"

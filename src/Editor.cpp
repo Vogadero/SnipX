@@ -984,18 +984,18 @@ void Editor::DrawToolbar(Graphics* graphics)
     GetClientRect(m_hwnd, &rc);
     
     // 工具栏背景
-    SolidBrush toolbarBrush(Color(255, 250, 250, 250));
+    SolidBrush toolbarBrush(Color(255, 248, 250, 252));
     graphics->FillRectangle(&toolbarBrush, 0, 0, rc.right, m_toolbarHeight);
-    Pen bottomLinePen(Color(255, 220, 220, 220), 1);
+    Pen bottomLinePen(Color(255, 226, 232, 240), 1);
     graphics->DrawLine(&bottomLinePen, 0, m_toolbarHeight - 1, rc.right, m_toolbarHeight - 1);
-    
-    Font font(L"Microsoft YaHei", 8);
-    SolidBrush textBrush(Color(255, 35, 35, 35));
-    SolidBrush selectedBrush(Color(255, 214, 232, 255));
-    SolidBrush hoverBrush(Color(255, 236, 244, 255));
+
+    Font font(L"Microsoft YaHei UI", 8);
+    SolidBrush textBrush(Color(255, 17, 24, 39));
+    SolidBrush selectedBrush(Color(255, 219, 234, 254));
+    SolidBrush hoverBrush(Color(255, 234, 242, 255));
     SolidBrush normalBrush(Color(255, 255, 255, 255));
-    Pen borderPen(Color(255, 190, 190, 190), 1);
-    Pen activeBorderPen(Color(255, 0, 120, 215), 2);
+    Pen borderPen(Color(255, 226, 232, 240), 1);
+    Pen activeBorderPen(Color(255, 59, 130, 246), 2);
     StringFormat format;
     format.SetAlignment(StringAlignmentCenter);
     format.SetLineAlignment(StringAlignmentCenter);
@@ -1046,18 +1046,18 @@ void Editor::DrawBottomBar(Graphics* graphics)
     int bottomY = rc.bottom - m_bottomBarHeight;
     
     // 底部栏背景
-    SolidBrush bottomBrush(Color(255, 250, 250, 250));
+    SolidBrush bottomBrush(Color(255, 248, 250, 252));
     graphics->FillRectangle(&bottomBrush, 0, bottomY, rc.right, m_bottomBarHeight);
-    Pen topLinePen(Color(255, 220, 220, 220), 1);
+    Pen topLinePen(Color(255, 226, 232, 240), 1);
     graphics->DrawLine(&topLinePen, 0, bottomY, rc.right, bottomY);
-    
+
     // 绘制按钮
-    Font font(L"Microsoft YaHei", 10);
-    SolidBrush textBrush(Color(255, 0, 0, 0));
+    Font font(L"Microsoft YaHei UI", 10);
+    SolidBrush textBrush(Color(255, 17, 24, 39));
     SolidBrush normalBrush(Color(255, 255, 255, 255));
-    SolidBrush hoverBrush(Color(255, 236, 244, 255));
-    Pen borderPen(Color(255, 100, 100, 100), 1);
-    Pen hoverBorderPen(Color(255, 0, 120, 215), 2);
+    SolidBrush hoverBrush(Color(255, 234, 242, 255));
+    Pen borderPen(Color(255, 226, 232, 240), 1);
+    Pen hoverBorderPen(Color(255, 59, 130, 246), 2);
     
     int x = 10;
     int y = bottomY + 10;
