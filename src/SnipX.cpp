@@ -158,9 +158,24 @@ void SnipXApp::StartLastSelectionCapture()
 
 void SnipXApp::StartScrollingCapture()
 {
-    if (m_pCapture && !m_pCapture->CaptureScrollingWindow())
+    if (!m_pCapture)
+        return;
+
+    std::wstring outputPath = m_pConfig ? m_pConfig->GetScrollingCapturePath() : L"";
+    std::wstring message = L"将对当前前台窗口执行简化滚动截图。\n\n请先激活需要截图的窗口，并保持窗口内容可滚动。";
+    if (!outputPath.empty())
     {
-        MessageBoxW(NULL, L"滚动截图失败，请先激活需要截图的窗口。", L"SnipX", MB_ICONINFORMATION);
+        CreateDirectoryW(outputPath.c_str(), NULL);
+        message += L"\n\n默认滚动截图目录：\n" + outputPath;
+    }
+    message += L"\n\n是否开始？";
+
+    if (MessageBoxW(NULL, message.c_str(), L"SnipX 滚动截图", MB_ICONINFORMATION | MB_OKCANCEL) != IDOK)
+        return;
+
+    if (!m_pCapture->CaptureScrollingWindow())
+    {
+        MessageBoxW(NULL, L"滚动截图失败，请先激活需要截图的窗口，并确认内容可滚动。", L"SnipX", MB_ICONINFORMATION);
     }
 }
 
@@ -182,6 +197,18 @@ void SnipXApp::ToggleRecording()
         MessageBoxW(NULL, message.c_str(), L"SnipX", MB_ICONINFORMATION);
         return;
     }
+
+    std::wstring outputPath = m_pConfig ? m_pConfig->GetRecordingPath() : L"";
+    std::wstring message = L"将开始录制虚拟桌面画面，并保存为 PNG 帧序列。\n\n再次点击托盘菜单中的“停止录屏”即可结束。";
+    if (!outputPath.empty())
+    {
+        CreateDirectoryW(outputPath.c_str(), NULL);
+        message += L"\n\n录屏保存目录：\n" + outputPath;
+    }
+    message += L"\n\n是否开始录屏？";
+
+    if (MessageBoxW(NULL, message.c_str(), L"SnipX 录屏", MB_ICONINFORMATION | MB_OKCANCEL) != IDOK)
+        return;
 
     if (!m_pRecorder->Start())
     {

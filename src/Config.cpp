@@ -62,6 +62,10 @@ void Config::SetDefaultValues()
         m_defaultPath = path;
         m_defaultPath += L"\\Screenshots";
         m_autoSavePath = m_defaultPath;
+        m_recordingPath = path;
+        m_recordingPath += L"\\SnipXRecordings";
+        m_scrollingCapturePath = path;
+        m_scrollingCapturePath += L"\\SnipXScrollingCaptures";
     }
 }
 
@@ -163,10 +167,18 @@ bool Config::Load()
                             buffer, MAX_PATH, configPath.c_str());
     m_autoSavePath = buffer;
     
-    GetPrivateProfileStringW(L"Save", L"FileNamePrefix", m_fileNamePrefix.c_str(), 
+    GetPrivateProfileStringW(L"Save", L"FileNamePrefix", m_fileNamePrefix.c_str(),
                             buffer, MAX_PATH, configPath.c_str());
     m_fileNamePrefix = buffer;
-    
+
+    GetPrivateProfileStringW(L"Save", L"RecordingPath", m_recordingPath.c_str(),
+                            buffer, MAX_PATH, configPath.c_str());
+    m_recordingPath = buffer;
+
+    GetPrivateProfileStringW(L"Save", L"ScrollingCapturePath", m_scrollingCapturePath.c_str(),
+                            buffer, MAX_PATH, configPath.c_str());
+    m_scrollingCapturePath = buffer;
+
     // 外观
     m_trayIconVisible = GetPrivateProfileIntW(L"Appearance", L"TrayIconVisible", 
                                               m_trayIconVisible, configPath.c_str()) != 0;
@@ -237,7 +249,9 @@ bool Config::Save()
     WritePrivateProfileStringW(L"Save", L"AutoSave", m_autoSave ? L"1" : L"0", configPath.c_str());
     WritePrivateProfileStringW(L"Save", L"AutoSavePath", m_autoSavePath.c_str(), configPath.c_str());
     WritePrivateProfileStringW(L"Save", L"FileNamePrefix", m_fileNamePrefix.c_str(), configPath.c_str());
-    
+    WritePrivateProfileStringW(L"Save", L"RecordingPath", m_recordingPath.c_str(), configPath.c_str());
+    WritePrivateProfileStringW(L"Save", L"ScrollingCapturePath", m_scrollingCapturePath.c_str(), configPath.c_str());
+
     // 外观
     WritePrivateProfileStringW(L"Appearance", L"TrayIconVisible", 
                               m_trayIconVisible ? L"1" : L"0", configPath.c_str());

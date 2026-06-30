@@ -55,6 +55,14 @@ void SettingsDialog::Show()
 
 void SettingsDialog::CreateDialogWindow()
 {
+    // 已经打开时直接前置，避免重复创建多个设置窗口。
+    if (m_hwnd && IsWindow(m_hwnd))
+    {
+        ShowWindow(m_hwnd, SW_SHOW);
+        SetForegroundWindow(m_hwnd);
+        return;
+    }
+
     // 注册对话框类
     WNDCLASSEXW wc = { 0 };
     wc.cbSize = sizeof(WNDCLASSEXW);
@@ -70,7 +78,7 @@ void SettingsDialog::CreateDialogWindow()
         L"SnipXSettingsDialog",
         L"SnipX 设置",
         WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_VISIBLE,
-        CW_USEDEFAULT, CW_USEDEFAULT, 500, 400,
+        CW_USEDEFAULT, CW_USEDEFAULT, 560, 470,
         NULL, NULL, m_pApp->GetInstance(), NULL
     );
     
@@ -92,9 +100,12 @@ void SettingsDialog::CreateDialogWindow()
     int y = (GetSystemMetrics(SM_CYSCREEN) - (rc.bottom - rc.top)) / 2;
     SetWindowPos(m_hwnd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
     
-    // 消息循环
+    // 显示设置窗口，并在窗口关闭前只处理本窗口消息；关闭时不退出主程序。
+    ShowWindow(m_hwnd, SW_SHOW);
+    SetForegroundWindow(m_hwnd);
+
     MSG msg;
-    while (GetMessage(&msg, NULL, 0, 0))
+    while (m_hwnd && IsWindow(m_hwnd) && GetMessage(&msg, NULL, 0, 0))
     {
         if (!IsDialogMessage(m_hwnd, &msg))
         {
@@ -116,7 +127,7 @@ void SettingsDialog::InitControls(HWND hwnd)
     m_hTab = CreateWindowExW(
         0, WC_TABCONTROLW, L"",
         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,
-        10, 10, 470, 310,
+        10, 10, 530, 380,
         hwnd, (HMENU)IDC_TAB, m_pApp->GetInstance(), NULL
     );
     
@@ -151,11 +162,11 @@ void SettingsDialog::InitControls(HWND hwnd)
     
     // 创建按钮
     CreateWindowW(L"BUTTON", L"确定", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
-                 200, 330, 80, 30, hwnd, (HMENU)IDC_OK, m_pApp->GetInstance(), NULL);
+                 260, 405, 80, 30, hwnd, (HMENU)IDC_OK, m_pApp->GetInstance(), NULL);
     CreateWindowW(L"BUTTON", L"取消", WS_CHILD | WS_VISIBLE,
-                 290, 330, 80, 30, hwnd, (HMENU)IDC_CANCEL, m_pApp->GetInstance(), NULL);
+                 350, 405, 80, 30, hwnd, (HMENU)IDC_CANCEL, m_pApp->GetInstance(), NULL);
     CreateWindowW(L"BUTTON", L"应用", WS_CHILD | WS_VISIBLE,
-                 380, 330, 80, 30, hwnd, (HMENU)IDC_APPLY, m_pApp->GetInstance(), NULL);
+                 440, 405, 80, 30, hwnd, (HMENU)IDC_APPLY, m_pApp->GetInstance(), NULL);
     
     ApplyDefaultFont(hwnd);
     UpdateTabVisibility();
@@ -199,9 +210,22 @@ void SettingsDialog::InitAdvancedControls(HWND hwnd)
     CreateWindowW(L"STATIC", L"自动保存路径：", WS_CHILD | WS_VISIBLE,
                  30, 235, 100, 20, hwnd, NULL, m_pApp->GetInstance(), NULL);
     CreateWindowW(L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
-                 130, 232, 240, 24, hwnd, (HMENU)IDC_AUTO_SAVE_PATH, m_pApp->GetInstance(), NULL);
+                 130, 232, 300, 24, hwnd, (HMENU)IDC_AUTO_SAVE_PATH, m_pApp->GetInstance(), NULL);
     CreateWindowW(L"BUTTON", L"浏览...", WS_CHILD | WS_VISIBLE,
-                 380, 232, 70, 24, hwnd, (HMENU)IDC_BROWSE_AUTO_PATH, m_pApp->GetInstance(), NULL);
+                 440, 232, 70, 24, hwnd, (HMENU)IDC_BROWSE_AUTO_PATH, m_pApp->GetInstance(), NULL);
+    CreateWindowW(L"STATIC", L"录屏路径：", WS_CHILD | WS_VISIBLE,
+                 30, 270, 100, 20, hwnd, NULL, m_pApp->GetInstance(), NULL);
+    CreateWindowW(L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
+                 130, 267, 300, 24, hwnd, (HMENU)IDC_RECORDING_PATH, m_pApp->GetInstance(), NULL);
+    CreateWindowW(L"BUTTON", L"浏览...", WS_CHILD | WS_VISIBLE,
+                 440, 267, 70, 24, hwnd, (HMENU)IDC_BROWSE_RECORDING_PATH, m_pApp->GetInstance(), NULL);
+
+    CreateWindowW(L"STATIC", L"滚动截图路径：", WS_CHILD | WS_VISIBLE,
+                 30, 305, 100, 20, hwnd, NULL, m_pApp->GetInstance(), NULL);
+    CreateWindowW(L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
+                 130, 302, 300, 24, hwnd, (HMENU)IDC_SCROLLING_PATH, m_pApp->GetInstance(), NULL);
+    CreateWindowW(L"BUTTON", L"浏览...", WS_CHILD | WS_VISIBLE,
+                 440, 302, 70, 24, hwnd, (HMENU)IDC_BROWSE_SCROLLING_PATH, m_pApp->GetInstance(), NULL);
 
     SendDlgItemMessage(hwnd, IDC_JPG_QUALITY, TBM_SETRANGE, TRUE, MAKELPARAM(1, 100));
     SendDlgItemMessage(hwnd, IDC_JPG_QUALITY, TBM_SETTICFREQ, 10, 0);
@@ -248,6 +272,8 @@ void SettingsDialog::LoadSettings(HWND hwnd)
 
     SetDlgItemTextW(hwnd, IDC_SAVE_PATH, cfg->GetDefaultPath().c_str());
     SetDlgItemTextW(hwnd, IDC_AUTO_SAVE_PATH, cfg->GetAutoSavePath().c_str());
+    SetDlgItemTextW(hwnd, IDC_RECORDING_PATH, cfg->GetRecordingPath().c_str());
+    SetDlgItemTextW(hwnd, IDC_SCROLLING_PATH, cfg->GetScrollingCapturePath().c_str());
     SetDlgItemTextW(hwnd, IDC_FILE_PREFIX, cfg->GetFileNamePrefix().c_str());
     CheckDlgButton(hwnd, IDC_AUTO_SAVE, cfg->IsAutoSave() ? BST_CHECKED : BST_UNCHECKED);
     UpdateAutoSaveControls(hwnd);
@@ -313,6 +339,12 @@ void SettingsDialog::SaveSettings(HWND hwnd)
     GetDlgItemTextW(hwnd, IDC_FILE_PREFIX, textBuffer, MAX_PATH);
     cfg->SetFileNamePrefix(textBuffer);
 
+    GetDlgItemTextW(hwnd, IDC_RECORDING_PATH, textBuffer, MAX_PATH);
+    cfg->SetRecordingPath(textBuffer);
+
+    GetDlgItemTextW(hwnd, IDC_SCROLLING_PATH, textBuffer, MAX_PATH);
+    cfg->SetScrollingCapturePath(textBuffer);
+
     cfg->SetAutoSave(IsDlgButtonChecked(hwnd, IDC_AUTO_SAVE) == BST_CHECKED);
     cfg->SetJpgQuality((int)SendDlgItemMessage(hwnd, IDC_JPG_QUALITY, TBM_GETPOS, 0, 0));
     cfg->SetDefaultStrokeWidth((int)SendDlgItemMessage(hwnd, IDC_DEFAULT_WIDTH, TBM_GETPOS, 0, 0));
@@ -328,7 +360,8 @@ void SettingsDialog::UpdateTabVisibility()
     int saveControls[] = {
         IDC_FORMAT_PNG, IDC_FORMAT_JPG, IDC_FORMAT_BMP,
         IDC_SAVE_PATH, IDC_BROWSE_PATH, IDC_JPG_QUALITY, IDC_JPG_QUALITY_LABEL,
-        IDC_AUTO_SAVE, IDC_AUTO_SAVE_PATH, IDC_BROWSE_AUTO_PATH, IDC_FILE_PREFIX
+        IDC_AUTO_SAVE, IDC_AUTO_SAVE_PATH, IDC_BROWSE_AUTO_PATH, IDC_FILE_PREFIX,
+        IDC_RECORDING_PATH, IDC_BROWSE_RECORDING_PATH, IDC_SCROLLING_PATH, IDC_BROWSE_SCROLLING_PATH
     };
     int annotationControls[] = {
         IDC_DEFAULT_COLOR, IDC_DEFAULT_WIDTH, IDC_DEFAULT_WIDTH_LABEL
@@ -428,6 +461,20 @@ INT_PTR CALLBACK SettingsDialog::DialogProc(HWND hwnd, UINT msg, WPARAM wParam, 
             }
             return TRUE;
 
+        case IDC_BROWSE_RECORDING_PATH:
+            if (pThis)
+            {
+                pThis->BrowseFolder(IDC_RECORDING_PATH);
+            }
+            return TRUE;
+
+        case IDC_BROWSE_SCROLLING_PATH:
+            if (pThis)
+            {
+                pThis->BrowseFolder(IDC_SCROLLING_PATH);
+            }
+            return TRUE;
+
         case IDC_AUTO_SAVE:
             if (pThis)
             {
@@ -447,14 +494,15 @@ INT_PTR CALLBACK SettingsDialog::DialogProc(HWND hwnd, UINT msg, WPARAM wParam, 
             if (pThis)
             {
                 pThis->SaveSettings(hwnd);
+                pThis->m_hwnd = NULL;
                 DestroyWindow(hwnd);
-                PostQuitMessage(0);
             }
             return TRUE;
-            
+
         case IDC_CANCEL:
+            if (pThis)
+                pThis->m_hwnd = NULL;
             DestroyWindow(hwnd);
-            PostQuitMessage(0);
             return TRUE;
             
         case IDC_APPLY:
@@ -482,8 +530,14 @@ INT_PTR CALLBACK SettingsDialog::DialogProc(HWND hwnd, UINT msg, WPARAM wParam, 
         return TRUE;
     
     case WM_CLOSE:
+        if (pThis)
+            pThis->m_hwnd = NULL;
         DestroyWindow(hwnd);
-        PostQuitMessage(0);
+        return TRUE;
+
+    case WM_DESTROY:
+        if (pThis)
+            pThis->m_hwnd = NULL;
         return TRUE;
     }
     

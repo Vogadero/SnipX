@@ -3,6 +3,7 @@
 #include "TrayIcon.h"
 #include "SnipX.h"
 #include "resource.h"
+#include "Version.h"
 #include <vector>
 
 
@@ -182,10 +183,20 @@ LRESULT CALLBACK TrayIcon::TrayWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
                 pThis->m_pApp->GetConfig()->Save();
                 break;
             case IDM_ABOUT:
-
-                MessageBoxW(hwnd, L"SnipX v1.0\n极致轻量截图工具\n\n基于纯Win32 C++开发\n\n功能：\n- 截图和标注\n- 取色器\n- 贴图\n- 录屏帧序列\n- 保存和复制", 
-                           L"关于 SnipX", MB_ICONINFORMATION);
+            {
+                std::wstring about = L"SnipX ";
+                about += GetVersionString();
+                about += L"\n极致轻量截图工具\n\n";
+                about += L"基于纯 Win32 C++17、GDI+ 和系统 API 开发。\n\n";
+                about += L"功能：截图和标注、取色器、贴图、录屏帧序列、保存和复制。\n\n";
+                about += L"GitHub：\nhttps://github.com/Vogadero/SnipX\n\n";
+                about += L"点击“是”打开 GitHub 仓库，点击“否”关闭。";
+                if (MessageBoxW(hwnd, about.c_str(), L"关于 SnipX", MB_ICONINFORMATION | MB_YESNO) == IDYES)
+                {
+                    ShellExecuteW(hwnd, L"open", L"https://github.com/Vogadero/SnipX", NULL, NULL, SW_SHOWNORMAL);
+                }
                 break;
+            }
             case IDM_EXIT:
                 pThis->m_pApp->Exit();
                 break;

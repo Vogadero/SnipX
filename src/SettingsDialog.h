@@ -87,7 +87,11 @@ private:
         IDC_AUTO_SAVE_PATH = 1018,
         IDC_BROWSE_AUTO_PATH = 1019,
         IDC_FILE_PREFIX = 1020,
-        
+        IDC_RECORDING_PATH = 1021,
+        IDC_BROWSE_RECORDING_PATH = 1022,
+        IDC_SCROLLING_PATH = 1023,
+        IDC_BROWSE_SCROLLING_PATH = 1024,
+
         // 标注设置
         IDC_DEFAULT_COLOR = 1030,
         IDC_DEFAULT_WIDTH = 1031,

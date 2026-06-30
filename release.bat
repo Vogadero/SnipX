@@ -8,7 +8,7 @@ echo ========================================
 echo.
 
 REM 设置版本号
-set VERSION=1.1.4
+set VERSION=1.1.5
 set BUILD_DATE=%date:~0,10%
 
 echo 版本号: %VERSION%

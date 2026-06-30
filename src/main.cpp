@@ -10,6 +10,28 @@
 #include <windows.h>
 #include <shellapi.h>
 
+#ifndef DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
+DECLARE_HANDLE(DPI_AWARENESS_CONTEXT);
+#define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 ((DPI_AWARENESS_CONTEXT)-4)
+#endif
+
+namespace
+{
+    void EnableDpiAwareness()
+    {
+        HMODULE user32 = GetModuleHandleW(L"user32.dll");
+        if (!user32)
+            return;
+
+        typedef BOOL(WINAPI* SetProcessDpiAwarenessContextProc)(DPI_AWARENESS_CONTEXT);
+        auto setDpiAwarenessContext = (SetProcessDpiAwarenessContextProc)GetProcAddress(user32, "SetProcessDpiAwarenessContext");
+        if (setDpiAwarenessContext)
+        {
+            setDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+        }
+    }
+}
+
 // 全局变量
 HINSTANCE g_hInstance = NULL;
 SnipXApp* g_pApp = NULL;
@@ -18,7 +40,8 @@ SnipXApp* g_pApp = NULL;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     g_hInstance = hInstance;
-    
+    EnableDpiAwareness();
+
     // 初始化内存检查（仅 Debug 模式）
     MEMORY_CHECK_INIT();
     

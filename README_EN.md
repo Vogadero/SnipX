@@ -132,7 +132,15 @@ For detailed build instructions, see [COMPILE.md](COMPILE.md)
 
 ## 🎯 Roadmap
 
-### v1.1.4 - Editor UI Polish (Current)
+### v1.1.5 - Interaction, DPI and Editor Performance Polish (Current)
+- ✅ Fixed Settings dialog lifecycle so closing it no longer affects the main app loop
+- ✅ Added recording and scrolling capture output path settings
+- ✅ Added clearer start prompts for recording and scrolling capture
+- ✅ Added Per-Monitor DPI awareness to improve capture/color picker scaling
+- ✅ Improved editor minimum width and hover tooltip styling
+- ✅ Added blur/mosaic render caching and reduced annotation drag/redraw invalidation scope
+
+### v1.1.4 - Editor UI Polish
 - ✅ Optimized editor toolbar and bottom bar colors, borders, and fonts
 - ✅ Unified hover/selected states for better visual hierarchy
 
@@ -243,4 +251,4 @@ If you like SnipX, please give it a star! ⭐
 
 **Made with ❤️ by SnipX Team**
 
-**Last Updated**: 2026-06-05
+**Last Updated**: 2026-06-30

@@ -65,14 +65,18 @@ public:
     std::wstring GetAutoSavePath() const { return m_autoSavePath; }
     std::wstring GetEffectiveAutoSavePath() const;
     std::wstring GetFileNamePrefix() const { return m_fileNamePrefix; }
+    std::wstring GetRecordingPath() const { return m_recordingPath; }
+    std::wstring GetScrollingCapturePath() const { return m_scrollingCapturePath; }
 
-    
+
     void SetDefaultFormat(const std::wstring& format) { m_defaultFormat = format; }
     void SetDefaultPath(const std::wstring& path) { m_defaultPath = path; }
     void SetJpgQuality(int quality) { m_jpgQuality = quality; }
     void SetAutoSave(bool autoSave) { m_autoSave = autoSave; }
     void SetAutoSavePath(const std::wstring& path) { m_autoSavePath = path; }
     void SetFileNamePrefix(const std::wstring& prefix) { m_fileNamePrefix = prefix; }
+    void SetRecordingPath(const std::wstring& path) { m_recordingPath = path; }
+    void SetScrollingCapturePath(const std::wstring& path) { m_scrollingCapturePath = path; }
     
     // 外观配置
     bool IsTrayIconVisible() const { return m_trayIconVisible; }
@@ -117,7 +121,9 @@ private:
     bool m_autoSave;
     std::wstring m_autoSavePath;
     std::wstring m_fileNamePrefix;
-    
+    std::wstring m_recordingPath;
+    std::wstring m_scrollingCapturePath;
+
     // 外观
     bool m_trayIconVisible;
     StartupMode m_startupMode;

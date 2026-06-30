@@ -166,16 +166,26 @@ class MosaicAnnotation : public Annotation
 public:
     Rect rect;
     Bitmap* sourceBitmap;
+    Bitmap* cachedBitmap;
+    Rect cachedRect;
+    int sourceOffsetX;
+    int sourceOffsetY;
     int blockSize;
-    
-    MosaicAnnotation() : sourceBitmap(nullptr), blockSize(10) {}
-    ~MosaicAnnotation() { if (sourceBitmap) delete sourceBitmap; }
-    
+    bool cacheDirty;
+
+    MosaicAnnotation()
+        : sourceBitmap(nullptr), cachedBitmap(nullptr), sourceOffsetX(0), sourceOffsetY(0), blockSize(10), cacheDirty(true) {}
+    ~MosaicAnnotation() { if (sourceBitmap) delete sourceBitmap; if (cachedBitmap) delete cachedBitmap; }
+
     void Draw(Graphics* graphics) override;
     bool HitTest(Point pt) override;
     void Move(int dx, int dy) override;
     Rect GetBounds() const override;
     void ResizeToBounds(const Rect& bounds) override;
+    /**
+     * 清空已生成的马赛克缓存，下次绘制时按当前区域重建。
+     */
+    void InvalidateCache();
 };
 
 // 模糊标注
@@ -184,15 +194,25 @@ class BlurAnnotation : public Annotation
 public:
     Rect rect;
     Bitmap* sourceBitmap;
-    
-    BlurAnnotation() : sourceBitmap(nullptr) {}
-    ~BlurAnnotation() { if (sourceBitmap) delete sourceBitmap; }
-    
+    Bitmap* cachedBitmap;
+    Rect cachedRect;
+    int sourceOffsetX;
+    int sourceOffsetY;
+    bool cacheDirty;
+
+    BlurAnnotation()
+        : sourceBitmap(nullptr), cachedBitmap(nullptr), sourceOffsetX(0), sourceOffsetY(0), cacheDirty(true) {}
+    ~BlurAnnotation() { if (sourceBitmap) delete sourceBitmap; if (cachedBitmap) delete cachedBitmap; }
+
     void Draw(Graphics* graphics) override;
     bool HitTest(Point pt) override;
     void Move(int dx, int dy) override;
     Rect GetBounds() const override;
     void ResizeToBounds(const Rect& bounds) override;
+    /**
+     * 清空已生成的模糊缓存，下次绘制时按当前区域重建。
+     */
+    void InvalidateCache();
 };
 
 // 编辑器主类
@@ -333,7 +353,20 @@ private:
      * 循环切换箭头工具样式。
      */
     void CycleArrowStyle();
-    
+    /**
+     * 失效指定标注区域并附带边距，减少拖拽、缩放和绘制时的整窗刷新。
+     *
+     * @param bounds 标注在客户区坐标中的外接矩形。
+     */
+    void InvalidateAnnotationRect(const Rect& bounds);
+    /**
+     * 同时失效两个标注区域，用于移动、缩放前后位置合并刷新。
+     *
+     * @param oldBounds 修改前外接矩形。
+     * @param newBounds 修改后外接矩形。
+     */
+    void InvalidateAnnotationTransition(const Rect& oldBounds, const Rect& newBounds);
+
     SnipXApp* m_pApp;
     HWND m_hwnd;
     Bitmap* m_pBitmap;

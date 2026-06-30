@@ -370,6 +370,42 @@ namespace
         return Rect(x, y, w, h);
     }
 
+    Rect UnionRects(const Rect& first, const Rect& second)
+    {
+        Rect a = NormalizeRect(first);
+        Rect b = NormalizeRect(second);
+        int left = (std::min)(a.X, b.X);
+        int top = (std::min)(a.Y, b.Y);
+        int right = (std::max)(a.X + a.Width, b.X + b.Width);
+        int bottom = (std::max)(a.Y + a.Height, b.Y + b.Height);
+        return Rect(left, top, right - left, bottom - top);
+    }
+
+    Rect InflateRectBounds(const Rect& rect, int margin)
+    {
+        Rect normalized = NormalizeRect(rect);
+        return Rect(normalized.X - margin,
+                    normalized.Y - margin,
+                    normalized.Width + margin * 2,
+                    normalized.Height + margin * 2);
+    }
+
+    Rect ClipRectToBitmap(const Rect& rect, Bitmap* bitmap)
+    {
+        if (!bitmap)
+            return Rect(0, 0, 0, 0);
+
+        Rect normalized = NormalizeRect(rect);
+        int left = (std::max)(0, normalized.X);
+        int top = (std::max)(0, normalized.Y);
+        int right = (std::min)(normalized.X + normalized.Width, (int)bitmap->GetWidth());
+        int bottom = (std::min)(normalized.Y + normalized.Height, (int)bitmap->GetHeight());
+        if (right <= left || bottom <= top)
+            return Rect(0, 0, 0, 0);
+
+        return Rect(left, top, right - left, bottom - top);
+    }
+
     void DrawSelectionFrame(Graphics* graphics, const Rect& rect)
     {
         Pen borderPen(Color(255, 0, 120, 215), 2);
@@ -900,7 +936,8 @@ void Editor::CreateEditorWindow()
     int toolbarHeight = 60;
     int bottomBarHeight = 50;
     
-    int winWidth = imgWidth + 20;
+    int widthRectRight = STROKE_WIDTH_X + STROKE_WIDTH_WIDTH + 20;
+    int winWidth = (std::max)(imgWidth + 20, widthRectRight);
     int winHeight = imgHeight + toolbarHeight + bottomBarHeight + 20;
     
     // 居中显示
@@ -926,6 +963,21 @@ void Editor::DestroyEditorWindow()
         DestroyWindow(m_hwnd);
         m_hwnd = NULL;
     }
+}
+
+void Editor::InvalidateAnnotationRect(const Rect& bounds)
+{
+    if (!m_hwnd)
+        return;
+
+    Rect padded = InflateRectBounds(bounds, 16);
+    RECT rc = { padded.X, padded.Y, padded.X + padded.Width, padded.Y + padded.Height };
+    InvalidateRect(m_hwnd, &rc, FALSE);
+}
+
+void Editor::InvalidateAnnotationTransition(const Rect& oldBounds, const Rect& newBounds)
+{
+    InvalidateAnnotationRect(UnionRects(oldBounds, newBounds));
 }
 
 void Editor::DrawEditor(HDC hdc)
@@ -1481,14 +1533,16 @@ LRESULT CALLBACK Editor::EditorWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
             if (pThis->StartResizeSelectedAnnotation(clientPt))
             {
                 SetCapture(hwnd);
-                InvalidateRect(hwnd, NULL, FALSE);
+                if (pThis->m_selectedAnnotation)
+                    pThis->InvalidateAnnotationRect(pThis->m_selectedAnnotation->GetBounds());
                 return 0;
             }
 
             if (pThis->StartMoveSelectedAnnotation(clientPt))
             {
                 SetCapture(hwnd);
-                InvalidateRect(hwnd, NULL, FALSE);
+                if (pThis->m_selectedAnnotation)
+                    pThis->InvalidateAnnotationRect(pThis->m_selectedAnnotation->GetBounds());
                 return 0;
             }
 
@@ -1514,19 +1568,25 @@ LRESULT CALLBACK Editor::EditorWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
             Point clientPt(pt.x, pt.y);
             if (pThis->m_resizingAnnotation)
             {
+                Rect oldBounds = pThis->m_selectedAnnotation ? pThis->m_selectedAnnotation->GetBounds() : Rect();
                 pThis->ResizeSelectedAnnotation(clientPt);
-                InvalidateRect(hwnd, NULL, FALSE);
+                if (pThis->m_selectedAnnotation)
+                    pThis->InvalidateAnnotationTransition(oldBounds, pThis->m_selectedAnnotation->GetBounds());
             }
             else if (pThis->m_movingAnnotation)
             {
+                Rect oldBounds = pThis->m_selectedAnnotation ? pThis->m_selectedAnnotation->GetBounds() : Rect();
                 pThis->MoveSelectedAnnotation(clientPt);
-                InvalidateRect(hwnd, NULL, FALSE);
+                if (pThis->m_selectedAnnotation)
+                    pThis->InvalidateAnnotationTransition(oldBounds, pThis->m_selectedAnnotation->GetBounds());
             }
             else if (pThis->m_drawing)
             {
+                Rect oldBounds = pThis->m_currentAnnotation ? pThis->m_currentAnnotation->GetBounds() : Rect();
                 Point imgPt(pt.x - pThis->m_imageX, pt.y - pThis->m_imageY);
                 pThis->UpdateAnnotation(imgPt);
-                InvalidateRect(hwnd, NULL, FALSE);
+                if (pThis->m_currentAnnotation)
+                    pThis->InvalidateAnnotationTransition(oldBounds, pThis->m_currentAnnotation->GetBounds());
             }
             else if (pThis->UpdateHoverState(clientPt))
             {
@@ -1545,19 +1605,22 @@ LRESULT CALLBACK Editor::EditorWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
                 pThis->m_resizingAnnotation = false;
                 pThis->m_resizeHandle = -1;
                 ReleaseCapture();
-                InvalidateRect(hwnd, NULL, FALSE);
+                if (pThis->m_selectedAnnotation)
+                    pThis->InvalidateAnnotationRect(pThis->m_selectedAnnotation->GetBounds());
             }
             else if (pThis->m_movingAnnotation)
             {
                 pThis->m_movingAnnotation = false;
                 ReleaseCapture();
-                InvalidateRect(hwnd, NULL, FALSE);
+                if (pThis->m_selectedAnnotation)
+                    pThis->InvalidateAnnotationRect(pThis->m_selectedAnnotation->GetBounds());
             }
             else if (pThis->m_drawing)
             {
+                Rect dirtyBounds = pThis->m_currentAnnotation ? pThis->m_currentAnnotation->GetBounds() : Rect();
                 pThis->FinishAnnotation();
                 ReleaseCapture();
-                InvalidateRect(hwnd, NULL, FALSE);
+                pThis->InvalidateAnnotationRect(dirtyBounds);
             }
         }
         return 0;
@@ -1772,6 +1835,8 @@ void Editor::StartAnnotation(Point pt)
         anno->rect = Rect(pt.X, pt.Y, 0, 0);
         anno->blockSize = 10;
         anno->sourceBitmap = m_pBitmap->Clone(0, 0, m_pBitmap->GetWidth(), m_pBitmap->GetHeight(), PixelFormat32bppARGB);
+        anno->sourceOffsetX = m_imageX;
+        anno->sourceOffsetY = m_imageY;
         m_currentAnnotation = anno;
         break;
     }
@@ -1784,6 +1849,8 @@ void Editor::StartAnnotation(Point pt)
         anno->selected = false;
         anno->rect = Rect(pt.X, pt.Y, 0, 0);
         anno->sourceBitmap = m_pBitmap->Clone(0, 0, m_pBitmap->GetWidth(), m_pBitmap->GetHeight(), PixelFormat32bppARGB);
+        anno->sourceOffsetX = m_imageX;
+        anno->sourceOffsetY = m_imageY;
         m_currentAnnotation = anno;
         break;
     }
@@ -2161,15 +2228,15 @@ void Editor::DrawHoverTooltip(Graphics* graphics)
     if (!tip)
         return;
 
-    Font font(L"Microsoft YaHei", 9);
+    Font font(L"Microsoft YaHei UI", 8);
     SolidBrush textBrush(Color(255, 255, 255, 255));
-    SolidBrush bgBrush(Color(220, 0, 0, 0));
-    Pen borderPen(Color(255, 255, 255, 255), 1);
+    SolidBrush bgBrush(Color(205, 17, 24, 39));
+    Pen borderPen(Color(160, 148, 163, 184), 1);
     StringFormat format;
     format.SetAlignment(StringAlignmentCenter);
     format.SetLineAlignment(StringAlignmentCenter);
 
-    RectF layoutRect((REAL)m_hoverPoint.X + 14.0f, (REAL)m_hoverPoint.Y + 18.0f, 160.0f, 26.0f);
+    RectF layoutRect((REAL)m_hoverPoint.X + 12.0f, (REAL)m_hoverPoint.Y + 16.0f, 126.0f, 22.0f);
     RECT rc;
     GetClientRect(m_hwnd, &rc);
     if (layoutRect.GetRight() > rc.right - 4)
@@ -2307,41 +2374,57 @@ void TextAnnotation::ResizeToBounds(const Rect& bounds)
 // MosaicAnnotation 实现
 void MosaicAnnotation::Draw(Graphics* graphics)
 {
-    if (!sourceBitmap || rect.Width <= 0 || rect.Height <= 0)
+    Rect bounds = NormalizeRect(rect);
+    if (!sourceBitmap || bounds.Width <= 0 || bounds.Height <= 0)
         return;
-    
-    // 创建马赛克效果
-    for (int y = rect.Y; y < rect.Y + rect.Height; y += blockSize)
+
+    Rect sourceRect = ClipRectToBitmap(Rect(bounds.X - sourceOffsetX, bounds.Y - sourceOffsetY, bounds.Width, bounds.Height), sourceBitmap);
+    if (sourceRect.Width <= 0 || sourceRect.Height <= 0)
+        return;
+
+    Rect drawRect(sourceRect.X + sourceOffsetX, sourceRect.Y + sourceOffsetY, sourceRect.Width, sourceRect.Height);
+    if (cacheDirty || !cachedBitmap || cachedRect.X != drawRect.X || cachedRect.Y != drawRect.Y ||
+        cachedRect.Width != drawRect.Width || cachedRect.Height != drawRect.Height)
     {
-        for (int x = rect.X; x < rect.X + rect.Width; x += blockSize)
+        if (cachedBitmap)
         {
-            // 计算块的实际大小
-            int bw = (std::min)(blockSize, rect.X + rect.Width - x);
-            int bh = (std::min)(blockSize, rect.Y + rect.Height - y);
-            
-            if (bw <= 0 || bh <= 0)
-                continue;
-            
-            // 获取块中心像素颜色
-            int cx = x + bw / 2;
-            int cy = y + bh / 2;
-            
-            if (cx >= 0 && cy >= 0 && cx < sourceBitmap->GetWidth() && cy < sourceBitmap->GetHeight())
-            {
-                Color pixelColor;
-                sourceBitmap->GetPixel(cx, cy, &pixelColor);
-                
-                // 填充整个块
-                SolidBrush brush(pixelColor);
-                graphics->FillRectangle(&brush, x, y, bw, bh);
-            }
+            delete cachedBitmap;
+            cachedBitmap = nullptr;
         }
+
+        cachedBitmap = new Bitmap(drawRect.Width, drawRect.Height, PixelFormat32bppARGB);
+        Graphics* cacheGraphics = Graphics::FromImage(cachedBitmap);
+        if (cacheGraphics)
+        {
+            for (int y = 0; y < drawRect.Height; y += blockSize)
+            {
+                for (int x = 0; x < drawRect.Width; x += blockSize)
+                {
+                    int bw = (std::min)(blockSize, drawRect.Width - x);
+                    int bh = (std::min)(blockSize, drawRect.Height - y);
+                    int cx = sourceRect.X + x + bw / 2;
+                    int cy = sourceRect.Y + y + bh / 2;
+
+                    Color pixelColor;
+                    sourceBitmap->GetPixel(cx, cy, &pixelColor);
+                    SolidBrush brush(pixelColor);
+                    cacheGraphics->FillRectangle(&brush, x, y, bw, bh);
+                }
+            }
+            delete cacheGraphics;
+        }
+
+        cachedRect = drawRect;
+        cacheDirty = false;
     }
+
+    if (cachedBitmap)
+        graphics->DrawImage(cachedBitmap, cachedRect);
 
     if (selected)
     {
-        DrawSelectionFrame(graphics, rect);
-        DrawResizeHandles(graphics, rect);
+        DrawSelectionFrame(graphics, bounds);
+        DrawResizeHandles(graphics, bounds);
     }
 }
 
@@ -2354,6 +2437,7 @@ void MosaicAnnotation::Move(int dx, int dy)
 {
     rect.X += dx;
     rect.Y += dy;
+    InvalidateCache();
 }
 
 Rect MosaicAnnotation::GetBounds() const
@@ -2364,40 +2448,69 @@ Rect MosaicAnnotation::GetBounds() const
 void MosaicAnnotation::ResizeToBounds(const Rect& bounds)
 {
     rect = NormalizeRect(bounds);
+    InvalidateCache();
+}
+
+void MosaicAnnotation::InvalidateCache()
+{
+    cacheDirty = true;
 }
 
 // BlurAnnotation 实现
 void BlurAnnotation::Draw(Graphics* graphics)
 {
-    if (!sourceBitmap || rect.Width <= 0 || rect.Height <= 0)
+    Rect bounds = NormalizeRect(rect);
+    if (!sourceBitmap || bounds.Width <= 0 || bounds.Height <= 0)
         return;
-    
-    // 简化的模糊效果：使用缩小再放大的方式
-    int smallWidth = (std::max)(1, rect.Width / 10);
-    int smallHeight = (std::max)(1, rect.Height / 10);
-    
-    Bitmap* smallBitmap = new Bitmap(smallWidth, smallHeight);
-    Graphics* g = Graphics::FromImage(smallBitmap);
-    g->SetInterpolationMode(InterpolationModeHighQualityBicubic);
-    
-    // 缩小
-    g->DrawImage(sourceBitmap, 
-                Rect(0, 0, smallWidth, smallHeight),
-                rect.X, rect.Y, rect.Width, rect.Height,
-                UnitPixel);
-    
-    delete g;
-    
-    // 放大绘制
-    graphics->SetInterpolationMode(InterpolationModeHighQualityBicubic);
-    graphics->DrawImage(smallBitmap, rect);
-    
-    delete smallBitmap;
+
+    Rect sourceRect = ClipRectToBitmap(Rect(bounds.X - sourceOffsetX, bounds.Y - sourceOffsetY, bounds.Width, bounds.Height), sourceBitmap);
+    if (sourceRect.Width <= 0 || sourceRect.Height <= 0)
+        return;
+
+    Rect drawRect(sourceRect.X + sourceOffsetX, sourceRect.Y + sourceOffsetY, sourceRect.Width, sourceRect.Height);
+    if (cacheDirty || !cachedBitmap || cachedRect.X != drawRect.X || cachedRect.Y != drawRect.Y ||
+        cachedRect.Width != drawRect.Width || cachedRect.Height != drawRect.Height)
+    {
+        if (cachedBitmap)
+        {
+            delete cachedBitmap;
+            cachedBitmap = nullptr;
+        }
+
+        int smallWidth = (std::max)(1, sourceRect.Width / 10);
+        int smallHeight = (std::max)(1, sourceRect.Height / 10);
+        Bitmap smallBitmap(smallWidth, smallHeight, PixelFormat32bppARGB);
+        Graphics* smallGraphics = Graphics::FromImage(&smallBitmap);
+        if (smallGraphics)
+        {
+            smallGraphics->SetInterpolationMode(InterpolationModeHighQualityBicubic);
+            smallGraphics->DrawImage(sourceBitmap,
+                                     Rect(0, 0, smallWidth, smallHeight),
+                                     sourceRect.X, sourceRect.Y, sourceRect.Width, sourceRect.Height,
+                                     UnitPixel);
+            delete smallGraphics;
+        }
+
+        cachedBitmap = new Bitmap(drawRect.Width, drawRect.Height, PixelFormat32bppARGB);
+        Graphics* cacheGraphics = Graphics::FromImage(cachedBitmap);
+        if (cacheGraphics)
+        {
+            cacheGraphics->SetInterpolationMode(InterpolationModeNearestNeighbor);
+            cacheGraphics->DrawImage(&smallBitmap, Rect(0, 0, drawRect.Width, drawRect.Height));
+            delete cacheGraphics;
+        }
+
+        cachedRect = drawRect;
+        cacheDirty = false;
+    }
+
+    if (cachedBitmap)
+        graphics->DrawImage(cachedBitmap, cachedRect);
 
     if (selected)
     {
-        DrawSelectionFrame(graphics, rect);
-        DrawResizeHandles(graphics, rect);
+        DrawSelectionFrame(graphics, bounds);
+        DrawResizeHandles(graphics, bounds);
     }
 }
 
@@ -2410,6 +2523,7 @@ void BlurAnnotation::Move(int dx, int dy)
 {
     rect.X += dx;
     rect.Y += dy;
+    InvalidateCache();
 }
 
 Rect BlurAnnotation::GetBounds() const
@@ -2420,6 +2534,11 @@ Rect BlurAnnotation::GetBounds() const
 void BlurAnnotation::ResizeToBounds(const Rect& bounds)
 {
     rect = NormalizeRect(bounds);
+    InvalidateCache();
 }
 
+void BlurAnnotation::InvalidateCache()
+{
+    cacheDirty = true;
+}
 

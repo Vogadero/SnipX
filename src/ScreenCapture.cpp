@@ -4,7 +4,9 @@
 #include "SnipX.h"
 #include "Config.h"
 #include <algorithm>
+#include <cstdlib>
 #include <dwmapi.h>
+#include <shlobj.h>
 #include <windowsx.h>
 #include <vector>
 
@@ -13,6 +15,49 @@
 
 namespace
 {
+    /**
+     * 获取 GDI+ 图片编码器 CLSID。
+     */
+    bool GetEncoderClsidByMime(const WCHAR* format, CLSID* pClsid)
+    {
+        UINT num = 0;
+        UINT size = 0;
+        GetImageEncodersSize(&num, &size);
+        if (size == 0)
+            return false;
+
+        ImageCodecInfo* pImageCodecInfo = (ImageCodecInfo*)malloc(size);
+        if (!pImageCodecInfo)
+            return false;
+
+        GetImageEncoders(num, size, pImageCodecInfo);
+        for (UINT i = 0; i < num; i++)
+        {
+            if (wcscmp(pImageCodecInfo[i].MimeType, format) == 0)
+            {
+                *pClsid = pImageCodecInfo[i].Clsid;
+                free(pImageCodecInfo);
+                return true;
+            }
+        }
+
+        free(pImageCodecInfo);
+        return false;
+    }
+
+    /**
+     * 生成用于滚动截图文件名的本地时间戳。
+     */
+    std::wstring CreateScrollingTimestamp()
+    {
+        SYSTEMTIME st;
+        GetLocalTime(&st);
+        WCHAR timestamp[32] = { 0 };
+        swprintf_s(timestamp, L"%04d%02d%02d_%02d%02d%02d",
+                   st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+        return timestamp;
+    }
+
     /**
      * 将窗口矩形裁剪到虚拟桌面范围内。
      *
@@ -161,6 +206,24 @@ bool ScreenCapture::CaptureScrollingWindow()
         int destY = (int)i * stride;
         graphics.DrawImage(segments[i], 0, destY, width, height);
         delete segments[i];
+    }
+
+    if (m_pApp && m_pApp->GetConfig())
+    {
+        std::wstring outputPath = m_pApp->GetConfig()->GetScrollingCapturePath();
+        if (!outputPath.empty())
+        {
+            CreateDirectoryW(outputPath.c_str(), NULL);
+            std::wstring filename = outputPath + L"\\Scrolling_" + CreateScrollingTimestamp() + L".png";
+            CLSID pngClsid;
+            if (GetEncoderClsidByMime(L"image/png", &pngClsid) && finalBitmap->Save(filename.c_str(), &pngClsid, NULL) == Ok)
+            {
+                m_pApp->GetConfig()->AddHistoryItem(filename);
+                m_pApp->GetConfig()->Save();
+                std::wstring savedMessage = L"滚动截图已保存到：\n" + filename + L"\n\n接下来将在编辑器中打开。";
+                MessageBoxW(NULL, savedMessage.c_str(), L"SnipX 滚动截图", MB_ICONINFORMATION);
+            }
+        }
     }
 
     if (m_pApp)

@@ -205,12 +205,17 @@ void ScreenRecorder::DestroyRecorderWindow()
 
 bool ScreenRecorder::PrepareOutputDirectory()
 {
-    WCHAR path[MAX_PATH] = { 0 };
-    if (FAILED(SHGetFolderPathW(NULL, CSIDL_MYPICTURES, NULL, 0, path)))
-        return false;
-
-    std::wstring root = path;
-    root += L"\\SnipXRecordings";
+    std::wstring root = m_pApp && m_pApp->GetConfig()
+        ? m_pApp->GetConfig()->GetRecordingPath()
+        : L"";
+    if (root.empty())
+    {
+        WCHAR path[MAX_PATH] = { 0 };
+        if (FAILED(SHGetFolderPathW(NULL, CSIDL_MYPICTURES, NULL, 0, path)))
+            return false;
+        root = path;
+        root += L"\\SnipXRecordings";
+    }
     CreateDirectoryW(root.c_str(), NULL);
 
     m_outputDirectory = root + L"\\Recording_" + CreateDirectoryTimestamp();
