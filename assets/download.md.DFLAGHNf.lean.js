@@ -1,0 +1,1 @@
+import{_ as a,o as l,c as e,a2 as s}from"./chunks/framework.xlC3Vtar.js";const g=JSON.parse('{"title":"下载","description":"","frontmatter":{},"headers":[],"relativePath":"download.md","filePath":"download.md"}'),t={name:"download.md"};function o(n,i,r,h,p,d){return l(),e("div",null,[...i[0]||(i[0]=[s("",102)])])}const u=a(t,[["render",o]]);export{g as __pageData,u as default};
