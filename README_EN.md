@@ -132,7 +132,12 @@ For detailed build instructions, see [COMPILE.md](COMPILE.md)
 
 ## 🎯 Roadmap
 
-### v1.1.5 - Interaction, DPI and Editor Performance Polish (Current)
+### v1.1.6 - Editor Redraw Cleanup (Current)
+- ✅ Reused one drag-rectangle helper for rectangle-like annotations
+- ✅ Skipped annotation move/resize/draw refreshes when mouse input does not change the annotation
+- ✅ Documented annotation update return values for easier maintenance
+
+### v1.1.5 - Interaction, DPI and Editor Performance Polish
 - ✅ Fixed Settings dialog lifecycle so closing it no longer affects the main app loop
 - ✅ Added recording and scrolling capture output path settings
 - ✅ Added clearer start prompts for recording and scrolling capture
@@ -251,4 +256,4 @@ If you like SnipX, please give it a star! ⭐
 
 **Made with ❤️ by SnipX Team**
 
-**Last Updated**: 2026-06-30
+**Last Updated**: 2026-07-11

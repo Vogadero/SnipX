@@ -370,6 +370,22 @@ namespace
         return Rect(x, y, w, h);
     }
 
+    bool RectEquals(const Rect& first, const Rect& second)
+    {
+        Rect a = NormalizeRect(first);
+        Rect b = NormalizeRect(second);
+        return a.X == b.X && a.Y == b.Y && a.Width == b.Width && a.Height == b.Height;
+    }
+
+    Rect MakeImageDragRect(Point start, Point end, int imageX, int imageY)
+    {
+        int x = (std::min)(start.X, end.X);
+        int y = (std::min)(start.Y, end.Y);
+        int w = abs(end.X - start.X);
+        int h = abs(end.Y - start.Y);
+        return Rect(x + imageX, y + imageY, w, h);
+    }
+
     Rect UnionRects(const Rect& first, const Rect& second)
     {
         Rect a = NormalizeRect(first);
@@ -1569,23 +1585,20 @@ LRESULT CALLBACK Editor::EditorWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
             if (pThis->m_resizingAnnotation)
             {
                 Rect oldBounds = pThis->m_selectedAnnotation ? pThis->m_selectedAnnotation->GetBounds() : Rect();
-                pThis->ResizeSelectedAnnotation(clientPt);
-                if (pThis->m_selectedAnnotation)
+                if (pThis->ResizeSelectedAnnotation(clientPt) && pThis->m_selectedAnnotation)
                     pThis->InvalidateAnnotationTransition(oldBounds, pThis->m_selectedAnnotation->GetBounds());
             }
             else if (pThis->m_movingAnnotation)
             {
                 Rect oldBounds = pThis->m_selectedAnnotation ? pThis->m_selectedAnnotation->GetBounds() : Rect();
-                pThis->MoveSelectedAnnotation(clientPt);
-                if (pThis->m_selectedAnnotation)
+                if (pThis->MoveSelectedAnnotation(clientPt) && pThis->m_selectedAnnotation)
                     pThis->InvalidateAnnotationTransition(oldBounds, pThis->m_selectedAnnotation->GetBounds());
             }
             else if (pThis->m_drawing)
             {
                 Rect oldBounds = pThis->m_currentAnnotation ? pThis->m_currentAnnotation->GetBounds() : Rect();
                 Point imgPt(pt.x - pThis->m_imageX, pt.y - pThis->m_imageY);
-                pThis->UpdateAnnotation(imgPt);
-                if (pThis->m_currentAnnotation)
+                if (pThis->UpdateAnnotation(imgPt) && pThis->m_currentAnnotation)
                     pThis->InvalidateAnnotationTransition(oldBounds, pThis->m_currentAnnotation->GetBounds());
             }
             else if (pThis->UpdateHoverState(clientPt))
@@ -1860,33 +1873,25 @@ void Editor::StartAnnotation(Point pt)
     }
 }
 
-void Editor::UpdateAnnotation(Point pt)
+bool Editor::UpdateAnnotation(Point pt)
 {
-    if (!m_currentAnnotation)
-        return;
-    
+    if (!m_currentAnnotation || (pt.X == m_lastPoint.X && pt.Y == m_lastPoint.Y))
+        return false;
+
     m_lastPoint = pt;
-    
+
     switch (m_currentAnnotation->type)
     {
     case ANNO_RECTANGLE:
     {
         RectangleAnnotation* anno = (RectangleAnnotation*)m_currentAnnotation;
-        int x = (std::min)(m_startPoint.X, pt.X);
-        int y = (std::min)(m_startPoint.Y, pt.Y);
-        int w = abs(pt.X - m_startPoint.X);
-        int h = abs(pt.Y - m_startPoint.Y);
-        anno->rect = Rect(x + m_imageX, y + m_imageY, w, h);
+        anno->rect = MakeImageDragRect(m_startPoint, pt, m_imageX, m_imageY);
         break;
     }
     case ANNO_ELLIPSE:
     {
         EllipseAnnotation* anno = (EllipseAnnotation*)m_currentAnnotation;
-        int x = (std::min)(m_startPoint.X, pt.X);
-        int y = (std::min)(m_startPoint.Y, pt.Y);
-        int w = abs(pt.X - m_startPoint.X);
-        int h = abs(pt.Y - m_startPoint.Y);
-        anno->rect = Rect(x + m_imageX, y + m_imageY, w, h);
+        anno->rect = MakeImageDragRect(m_startPoint, pt, m_imageX, m_imageY);
         break;
     }
     case ANNO_ARROW:
@@ -1906,34 +1911,26 @@ void Editor::UpdateAnnotation(Point pt)
     case ANNO_HIGHLIGHT:
     {
         HighlightAnnotation* anno = (HighlightAnnotation*)m_currentAnnotation;
-        int x = (std::min)(m_startPoint.X, pt.X);
-        int y = (std::min)(m_startPoint.Y, pt.Y);
-        int w = abs(pt.X - m_startPoint.X);
-        int h = abs(pt.Y - m_startPoint.Y);
-        anno->rect = Rect(x + m_imageX, y + m_imageY, w, h);
+        anno->rect = MakeImageDragRect(m_startPoint, pt, m_imageX, m_imageY);
         break;
     }
     case ANNO_MOSAIC:
     {
         MosaicAnnotation* anno = (MosaicAnnotation*)m_currentAnnotation;
-        int x = (std::min)(m_startPoint.X, pt.X);
-        int y = (std::min)(m_startPoint.Y, pt.Y);
-        int w = abs(pt.X - m_startPoint.X);
-        int h = abs(pt.Y - m_startPoint.Y);
-        anno->rect = Rect(x + m_imageX, y + m_imageY, w, h);
+        anno->rect = MakeImageDragRect(m_startPoint, pt, m_imageX, m_imageY);
+        anno->InvalidateCache();
         break;
     }
     case ANNO_BLUR:
     {
         BlurAnnotation* anno = (BlurAnnotation*)m_currentAnnotation;
-        int x = (std::min)(m_startPoint.X, pt.X);
-        int y = (std::min)(m_startPoint.Y, pt.Y);
-        int w = abs(pt.X - m_startPoint.X);
-        int h = abs(pt.Y - m_startPoint.Y);
-        anno->rect = Rect(x + m_imageX, y + m_imageY, w, h);
+        anno->rect = MakeImageDragRect(m_startPoint, pt, m_imageX, m_imageY);
+        anno->InvalidateCache();
         break;
     }
     }
+
+    return true;
 }
 
 void Editor::FinishAnnotation()
@@ -1986,18 +1983,19 @@ bool Editor::StartMoveSelectedAnnotation(Point pt)
     return true;
 }
 
-void Editor::MoveSelectedAnnotation(Point pt)
+bool Editor::MoveSelectedAnnotation(Point pt)
 {
     if (!m_selectedAnnotation || !m_movingAnnotation)
-        return;
+        return false;
 
     int dx = pt.X - m_lastPoint.X;
     int dy = pt.Y - m_lastPoint.Y;
     if (dx == 0 && dy == 0)
-        return;
+        return false;
 
     m_selectedAnnotation->Move(dx, dy);
     m_lastPoint = pt;
+    return true;
 }
 
 bool Editor::StartResizeSelectedAnnotation(Point pt)
@@ -2019,15 +2017,19 @@ bool Editor::StartResizeSelectedAnnotation(Point pt)
     return true;
 }
 
-void Editor::ResizeSelectedAnnotation(Point pt)
+bool Editor::ResizeSelectedAnnotation(Point pt)
 {
     if (!m_selectedAnnotation || !m_resizingAnnotation)
-        return;
+        return false;
 
     Rect resizedBounds = m_resizeStartBounds;
     ApplyResizeHandle(resizedBounds, m_resizeHandle, pt);
+    if (RectEquals(resizedBounds, m_selectedAnnotation->GetBounds()))
+        return false;
+
     m_selectedAnnotation->ResizeToBounds(resizedBounds);
     m_lastPoint = pt;
+    return true;
 }
 
 void Editor::DeleteSelectedAnnotation()

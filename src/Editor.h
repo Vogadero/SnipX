@@ -260,7 +260,13 @@ private:
     // 标注操作
 
     void StartAnnotation(Point pt);
-    void UpdateAnnotation(Point pt);
+    /**
+     * 根据鼠标位置更新当前正在绘制的标注对象。
+     *
+     * @param pt 图片坐标。
+     * @return 标注区域实际变化时返回 true。
+     */
+    bool UpdateAnnotation(Point pt);
     void FinishAnnotation();
     void SelectAnnotation(Point pt);
     /**
@@ -274,8 +280,9 @@ private:
      * 根据当前鼠标位置移动已选中的标注对象。
      *
      * @param pt 客户区坐标。
+     * @return 标注位置实际变化时返回 true。
      */
-    void MoveSelectedAnnotation(Point pt);
+    bool MoveSelectedAnnotation(Point pt);
     /**
      * 按鼠标位置尝试开始拖拽选中标注的缩放控制点。
      *
@@ -287,8 +294,9 @@ private:
      * 根据当前鼠标位置调整已选中标注对象大小。
      *
      * @param pt 客户区坐标。
+     * @return 标注尺寸或位置实际变化时返回 true。
      */
-    void ResizeSelectedAnnotation(Point pt);
+    bool ResizeSelectedAnnotation(Point pt);
     void DeleteSelectedAnnotation();
     void Undo();
     void Redo();

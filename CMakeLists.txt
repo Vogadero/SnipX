@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(SnipX VERSION 1.1.5 LANGUAGES CXX)
+project(SnipX VERSION 1.1.6 LANGUAGES CXX)
 
 # 设置C++标准
 set(CMAKE_CXX_STANDARD 17)
