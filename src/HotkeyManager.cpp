@@ -98,10 +98,12 @@ LRESULT CALLBACK HotkeyManager::HotkeyWndProc(HWND hwnd, UINT msg, WPARAM wParam
         {
             if (wParam == HOTKEY_ID_FULLSCREEN)
             {
+                // 全屏热键：直接截取虚拟桌面
                 pThis->m_pApp->StartFullScreenCapture();
             }
             else if (wParam == HOTKEY_ID_SCREENSHOT)
             {
+                // 区域截图热键：按住 Shift 时复用上次选区
                 if (GetKeyState(VK_SHIFT) < 0)
                 {
                     pThis->m_pApp->StartLastSelectionCapture();

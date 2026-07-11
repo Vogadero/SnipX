@@ -24,6 +24,24 @@ namespace
                    st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
         return timestamp;
     }
+
+    /**
+     * 向 INI 写入整数配置项。
+     */
+    void WriteIniInt(const wchar_t* section, const wchar_t* key, int value, const std::wstring& path)
+    {
+        WCHAR buffer[32];
+        _itow_s(value, buffer, 10);
+        WritePrivateProfileStringW(section, key, buffer, path.c_str());
+    }
+
+    /**
+     * 向 INI 写入布尔配置项（1/0）。
+     */
+    void WriteIniBool(const wchar_t* section, const wchar_t* key, bool value, const std::wstring& path)
+    {
+        WritePrivateProfileStringW(section, key, value ? L"1" : L"0", path.c_str());
+    }
 }
 
 
@@ -55,7 +73,7 @@ void Config::SetDefaultValues()
     m_defaultStrokeWidth = 2;
     m_autoStart = false;
     
-    // 获取默认保存路径
+    // 优先把默认输出目录放在“图片”下，方便用户直接找到
     WCHAR path[MAX_PATH];
     if (SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_MYPICTURES, NULL, 0, path)))
     {
@@ -81,16 +99,15 @@ std::wstring Config::GetEffectiveAutoSavePath() const
 
 std::wstring Config::GetConfigPath()
 {
-
     WCHAR path[MAX_PATH];
     if (SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_APPDATA, NULL, 0, path)))
     {
         std::wstring configPath = path;
         configPath += L"\\SnipX";
-        
-        // 确保目录存在
+
+        // 确保配置目录存在，避免首次启动时 INI 无法创建
         CreateDirectoryW(configPath.c_str(), NULL);
-        
+
         configPath += L"\\config.ini";
         return configPath;
     }
@@ -103,9 +120,9 @@ bool Config::Load()
     if (configPath.empty())
         return false;
     
-    // 使用Windows INI API读取配置
+    // 使用 Windows INI API 读取；缺失项保留默认值
     WCHAR buffer[MAX_PATH];
-    
+
     // 热键
     UINT hotkey = GetPrivateProfileIntW(L"Hotkey", L"Key", m_hotkey, configPath.c_str());
     if (hotkey != 0)
@@ -115,7 +132,7 @@ bool Config::Load()
     if (fullScreenHotkey != 0)
         m_fullScreenHotkey = fullScreenHotkey;
 
-    // 上次选区
+    // 上次选区：标记为有效但矩形为空时，按无选区处理
     m_hasLastSelection = GetPrivateProfileIntW(L"Selection", L"HasLastSelection", m_hasLastSelection, configPath.c_str()) != 0;
     m_lastSelection.left = GetPrivateProfileIntW(L"Selection", L"Left", m_lastSelection.left, configPath.c_str());
     m_lastSelection.top = GetPrivateProfileIntW(L"Selection", L"Top", m_lastSelection.top, configPath.c_str());
@@ -141,6 +158,7 @@ bool Config::Load()
         swprintf_s(key, L"Time%d", i);
         GetPrivateProfileStringW(L"History", key, L"", timeBuffer, 64, configPath.c_str());
 
+        // 跳过空路径槽位，兼容旧配置中的空洞项
         if (pathBuffer[0] != L'\0')
         {
             HistoryItem item;
@@ -204,71 +222,53 @@ bool Config::Save()
     std::wstring configPath = GetConfigPath();
     if (configPath.empty())
         return false;
-    
-    WCHAR buffer[32];
-    
+
     // 热键
-    _itow_s(m_hotkey, buffer, 10);
-    WritePrivateProfileStringW(L"Hotkey", L"Key", buffer, configPath.c_str());
-    _itow_s(m_fullScreenHotkey, buffer, 10);
-    WritePrivateProfileStringW(L"Hotkey", L"FullScreenKey", buffer, configPath.c_str());
+    WriteIniInt(L"Hotkey", L"Key", m_hotkey, configPath);
+    WriteIniInt(L"Hotkey", L"FullScreenKey", m_fullScreenHotkey, configPath);
 
     // 上次选区
-    WritePrivateProfileStringW(L"Selection", L"HasLastSelection", m_hasLastSelection ? L"1" : L"0", configPath.c_str());
-    _itow_s(m_lastSelection.left, buffer, 10);
-    WritePrivateProfileStringW(L"Selection", L"Left", buffer, configPath.c_str());
-    _itow_s(m_lastSelection.top, buffer, 10);
-    WritePrivateProfileStringW(L"Selection", L"Top", buffer, configPath.c_str());
-    _itow_s(m_lastSelection.right, buffer, 10);
-    WritePrivateProfileStringW(L"Selection", L"Right", buffer, configPath.c_str());
-    _itow_s(m_lastSelection.bottom, buffer, 10);
-    WritePrivateProfileStringW(L"Selection", L"Bottom", buffer, configPath.c_str());
+    WriteIniBool(L"Selection", L"HasLastSelection", m_hasLastSelection, configPath);
+    WriteIniInt(L"Selection", L"Left", m_lastSelection.left, configPath);
+    WriteIniInt(L"Selection", L"Top", m_lastSelection.top, configPath);
+    WriteIniInt(L"Selection", L"Right", m_lastSelection.right, configPath);
+    WriteIniInt(L"Selection", L"Bottom", m_lastSelection.bottom, configPath);
 
-    // 历史记录
-    _itow_s(m_historyLimit, buffer, 10);
-    WritePrivateProfileStringW(L"History", L"Limit", buffer, configPath.c_str());
-    _itow_s((int)m_historyItems.size(), buffer, 10);
-    WritePrivateProfileStringW(L"History", L"Count", buffer, configPath.c_str());
+    // 历史记录：固定写出 Limit 个槽位，空槽写空串以清理旧键
+    WriteIniInt(L"History", L"Limit", m_historyLimit, configPath);
+    WriteIniInt(L"History", L"Count", (int)m_historyItems.size(), configPath);
     for (int i = 0; i < m_historyLimit; i++)
     {
+        const bool hasItem = i < (int)m_historyItems.size();
         WCHAR key[32] = { 0 };
         swprintf_s(key, L"Path%d", i);
-        WritePrivateProfileStringW(L"History", key, i < (int)m_historyItems.size() ? m_historyItems[i].path.c_str() : L"", configPath.c_str());
+        WritePrivateProfileStringW(L"History", key, hasItem ? m_historyItems[i].path.c_str() : L"", configPath.c_str());
         swprintf_s(key, L"Time%d", i);
-        WritePrivateProfileStringW(L"History", key, i < (int)m_historyItems.size() ? m_historyItems[i].timestamp.c_str() : L"", configPath.c_str());
+        WritePrivateProfileStringW(L"History", key, hasItem ? m_historyItems[i].timestamp.c_str() : L"", configPath.c_str());
     }
-    
-    // 保存
 
+    // 保存
     WritePrivateProfileStringW(L"Save", L"DefaultFormat", m_defaultFormat.c_str(), configPath.c_str());
     WritePrivateProfileStringW(L"Save", L"DefaultPath", m_defaultPath.c_str(), configPath.c_str());
-    
-    _itow_s(m_jpgQuality, buffer, 10);
-    WritePrivateProfileStringW(L"Save", L"JpgQuality", buffer, configPath.c_str());
-    
-    WritePrivateProfileStringW(L"Save", L"AutoSave", m_autoSave ? L"1" : L"0", configPath.c_str());
+    WriteIniInt(L"Save", L"JpgQuality", m_jpgQuality, configPath);
+    WriteIniBool(L"Save", L"AutoSave", m_autoSave, configPath);
     WritePrivateProfileStringW(L"Save", L"AutoSavePath", m_autoSavePath.c_str(), configPath.c_str());
     WritePrivateProfileStringW(L"Save", L"FileNamePrefix", m_fileNamePrefix.c_str(), configPath.c_str());
     WritePrivateProfileStringW(L"Save", L"RecordingPath", m_recordingPath.c_str(), configPath.c_str());
     WritePrivateProfileStringW(L"Save", L"ScrollingCapturePath", m_scrollingCapturePath.c_str(), configPath.c_str());
 
     // 外观
-    WritePrivateProfileStringW(L"Appearance", L"TrayIconVisible", 
-                              m_trayIconVisible ? L"1" : L"0", configPath.c_str());
-    _itow_s(m_startupMode, buffer, 10);
-    WritePrivateProfileStringW(L"Appearance", L"StartupMode", buffer, configPath.c_str());
-    _itow_s(m_exitMode, buffer, 10);
-    WritePrivateProfileStringW(L"Appearance", L"ExitMode", buffer, configPath.c_str());
-    
+    WriteIniBool(L"Appearance", L"TrayIconVisible", m_trayIconVisible, configPath);
+    WriteIniInt(L"Appearance", L"StartupMode", m_startupMode, configPath);
+    WriteIniInt(L"Appearance", L"ExitMode", m_exitMode, configPath);
+
     // 标注
-    _itow_s(m_defaultColor, buffer, 10);
-    WritePrivateProfileStringW(L"Annotation", L"DefaultColor", buffer, configPath.c_str());
-    _itow_s(m_defaultStrokeWidth, buffer, 10);
-    WritePrivateProfileStringW(L"Annotation", L"DefaultStrokeWidth", buffer, configPath.c_str());
-    
+    WriteIniInt(L"Annotation", L"DefaultColor", m_defaultColor, configPath);
+    WriteIniInt(L"Annotation", L"DefaultStrokeWidth", m_defaultStrokeWidth, configPath);
+
     // 启动
-    WritePrivateProfileStringW(L"Startup", L"AutoStart", m_autoStart ? L"1" : L"0", configPath.c_str());
-    
+    WriteIniBool(L"Startup", L"AutoStart", m_autoStart, configPath);
+
     return true;
 }
 
@@ -283,6 +283,7 @@ void Config::AddHistoryItem(const std::wstring& path)
     if (path.empty())
         return;
 
+    // 相同路径先移除，再插到头部，保证最近使用优先
     for (auto it = m_historyItems.begin(); it != m_historyItems.end(); ++it)
     {
         if (it->path == path)
@@ -320,10 +321,10 @@ void Config::SetAutoStart(bool autoStart)
 {
     m_autoStart = autoStart;
     
-    // 设置注册表开机自启
+    // 同步当前用户 Run 注册表；失败时仍保留内存开关
     HKEY hKey;
     LPCWSTR subKey = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
-    
+
     if (RegOpenKeyExW(HKEY_CURRENT_USER, subKey, 0, KEY_SET_VALUE, &hKey) == ERROR_SUCCESS)
     {
         if (autoStart)

@@ -132,7 +132,12 @@ For detailed build instructions, see [COMPILE.md](COMPILE.md)
 
 ## 🎯 Roadmap
 
-### v1.1.6 - Editor Redraw Cleanup (Current)
+### v1.1.7 - Docs and Structure Cleanup (Current)
+- ✅ Added JSDoc-style API docs across core modules
+- ✅ Factored Config INI writes and unified capture selection completion
+- ✅ Aligned bottom-bar hover/tooltip with six actions
+
+### v1.1.6 - Editor Redraw Cleanup
 - ✅ Reused one drag-rectangle helper for rectangle-like annotations
 - ✅ Skipped annotation move/resize/draw refreshes when mouse input does not change the annotation
 - ✅ Documented annotation update return values for easier maintenance

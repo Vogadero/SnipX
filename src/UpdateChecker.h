@@ -11,7 +11,9 @@
 
 #pragma comment(lib, "wininet.lib")
 
-// 更新信息结构
+/**
+ * 远程版本检查结果。
+ */
 struct UpdateInfo
 {
     bool hasUpdate;
@@ -21,21 +23,31 @@ struct UpdateInfo
     std::wstring publishDate;
 };
 
-// 更新检查器类
+/**
+ * 通过 GitHub Releases API 检查是否有更新版本。
+ *
+ * 使用 WinINet 同步请求；调用方应避免在 UI 线程长时间阻塞。
+ */
 class UpdateChecker
 {
 private:
     std::wstring m_apiUrl;
     std::wstring m_userAgent;
-    
+
 public:
     UpdateChecker()
         : m_apiUrl(L"api.github.com")
         , m_userAgent(L"SnipX-UpdateChecker/1.0")
     {
     }
-    
-    // 检查更新（同步）
+
+    /**
+     * 同步检查指定仓库的最新 Release。
+     *
+     * @param owner GitHub 用户/组织名。
+     * @param repo 仓库名。
+     * @return 解析后的更新信息；网络失败时 hasUpdate 为 false。
+     */
     UpdateInfo CheckForUpdate(const std::wstring& owner, const std::wstring& repo)
     {
         UpdateInfo info = { false };

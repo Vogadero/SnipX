@@ -20,6 +20,7 @@ namespace
         if (sourceBitmap.GetLastStatus() != Ok)
             return nullptr;
 
+        // 克隆一份独立位图，避免剪贴板关闭后句柄失效
         return sourceBitmap.Clone(0, 0, sourceBitmap.GetWidth(), sourceBitmap.GetHeight(), PixelFormat32bppARGB);
     }
 }
@@ -75,7 +76,7 @@ bool SnipXApp::Initialize()
     m_pConfig->Load();
     LOG_INFO(L"Configuration loaded");
     
-    // 初始化热键管理器
+    // 初始化热键管理器；热键失败视为无法正常使用
     m_pHotkeyMgr = new HotkeyManager(this);
     if (!m_pHotkeyMgr->RegisterHotkey(m_pConfig->GetHotkey()))
     {
@@ -101,10 +102,10 @@ bool SnipXApp::Initialize()
     m_pEditor = new Editor(this);
     LOG_INFO(L"Editor initialized");
     
-    // 初始化取色器
-    m_pColorPicker = nullptr;  // 延迟创建
-    
-    // 如果配置为启动即截图
+    // 取色器延迟创建，避免启动时多余开销
+    m_pColorPicker = nullptr;
+
+    // 若配置为启动即截图，初始化完成后立即进入
     if (m_pConfig->GetStartupMode() == STARTUP_CAPTURE)
     {
         LOG_INFO(L"Starting capture on startup");
@@ -150,6 +151,7 @@ void SnipXApp::StartFullScreenCapture()
 
 void SnipXApp::StartLastSelectionCapture()
 {
+    // 没有可用上次选区时回退到交互式区域截图
     if (m_pCapture && !m_pCapture->CaptureLastSelection())
     {
         m_pCapture->Start();
@@ -184,6 +186,7 @@ void SnipXApp::ToggleRecording()
     if (!m_pRecorder)
         return;
 
+    // 录制中：停止并展示输出信息
     if (m_pRecorder->IsRecording())
     {
         std::wstring outputDirectory = m_pRecorder->GetOutputDirectory();
@@ -198,6 +201,7 @@ void SnipXApp::ToggleRecording()
         return;
     }
 
+    // 未录制：确认后开始
     std::wstring outputPath = m_pConfig ? m_pConfig->GetRecordingPath() : L"";
     std::wstring message = L"将开始录制虚拟桌面画面，并保存为 PNG 帧序列。\n\n再次点击托盘菜单中的“停止录屏”即可结束。";
     if (!outputPath.empty())
@@ -259,6 +263,7 @@ void SnipXApp::OnCaptureComplete(Bitmap* pBitmap)
 
 void SnipXApp::ShowSettings()
 {
+    // 设置对话框按“创建-显示-销毁”同步使用，避免长期持有 UI 状态
     SettingsDialog* dlg = new SettingsDialog(this);
     dlg->Show();
     delete dlg;

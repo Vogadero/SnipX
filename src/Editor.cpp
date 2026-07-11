@@ -21,6 +21,7 @@ namespace
     const int TOOL_BUTTON_HEIGHT = 40;
     const int TOOL_BUTTON_SPACING = 5;
     const int TOOL_BUTTON_COUNT = 10;
+    const int BOTTOM_BUTTON_COUNT = 6;
     const int COLOR_BOX_SIZE = 30;
     const int COLOR_BOX_OFFSET_X = TOOLBAR_X + TOOL_BUTTON_COUNT * (TOOL_BUTTON_WIDTH + TOOL_BUTTON_SPACING) + 10;
     const int COLOR_BOX_OFFSET_Y = TOOLBAR_Y + 5;
@@ -1142,7 +1143,7 @@ void Editor::DrawBottomBar(Graphics* graphics)
         L10n(L"关闭(Esc)", L"Close(Esc)")
     };
     
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < BOTTOM_BUTTON_COUNT; i++)
     {
         Rect btnRect(x, y, btnWidth, btnHeight);
         bool hovered = m_hoverBottomAction == i;
@@ -2164,7 +2165,7 @@ bool Editor::UpdateHoverState(Point pt)
         int x = 10;
         int btnWidth = 80;
         int spacing = 10;
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < BOTTOM_BUTTON_COUNT; i++)
         {
             if (pt.X >= x && pt.X <= x + btnWidth)
             {
@@ -2215,9 +2216,17 @@ const WCHAR* Editor::GetHoverTooltipText() const
         return L"点击展开颜色选择面板";
     if (m_hoverStrokeWidth)
         return L"点击展开粗细滑块";
-    if (m_hoverBottomAction >= 0)
+    if (m_hoverBottomAction >= 0 && m_hoverBottomAction < BOTTOM_BUTTON_COUNT)
     {
-        static const WCHAR* tips[] = { L"保存到文件", L"复制到剪贴板", L"贴图到桌面", L"关闭编辑器" };
+        // 与 DrawBottomBar / HitTestBottomBar 的 6 个按钮顺序保持一致
+        static const WCHAR* tips[] = {
+            L"保存到文件",
+            L"复制到剪贴板",
+            L"贴图到桌面",
+            L"OCR 识别",
+            L"上传图片",
+            L"关闭编辑器"
+        };
         return tips[m_hoverBottomAction];
     }
 
@@ -2310,7 +2319,7 @@ bool Editor::HitTestBottomBar(Point pt, int& action)
     int btnWidth = 80;
     int spacing = 10;
 
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < BOTTOM_BUTTON_COUNT; i++)
     {
         if (pt.X >= x && pt.X <= x + btnWidth)
         {

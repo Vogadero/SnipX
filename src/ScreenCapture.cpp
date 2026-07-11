@@ -62,9 +62,11 @@ namespace
      * 将窗口矩形裁剪到虚拟桌面范围内。
      *
      * @param rect 需要裁剪的窗口矩形。
+     * @param outOriginX 可选；输出虚拟桌面原点 X。
+     * @param outOriginY 可选；输出虚拟桌面原点 Y。
      * @return 裁剪后的矩形。
      */
-    RECT ClipRectToVirtualScreen(const RECT& rect)
+    RECT ClipRectToVirtualScreen(const RECT& rect, int* outOriginX = nullptr, int* outOriginY = nullptr)
     {
         RECT clipped = rect;
         RECT screenRect;
@@ -77,6 +79,11 @@ namespace
         if (clipped.top < screenRect.top) clipped.top = screenRect.top;
         if (clipped.right > screenRect.right) clipped.right = screenRect.right;
         if (clipped.bottom > screenRect.bottom) clipped.bottom = screenRect.bottom;
+
+        if (outOriginX)
+            *outOriginX = screenRect.left;
+        if (outOriginY)
+            *outOriginY = screenRect.top;
         return clipped;
     }
 }
@@ -242,25 +249,17 @@ void ScreenCapture::CompleteSelection(const RECT& selection, bool rememberSelect
     if (IsRectEmpty(&selection))
         return;
 
-    RECT clipped = selection;
-    RECT screenRect;
-    screenRect.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
-    screenRect.top = GetSystemMetrics(SM_YVIRTUALSCREEN);
-    screenRect.right = screenRect.left + GetSystemMetrics(SM_CXVIRTUALSCREEN);
-    screenRect.bottom = screenRect.top + GetSystemMetrics(SM_CYVIRTUALSCREEN);
-
-    if (clipped.left < screenRect.left) clipped.left = screenRect.left;
-    if (clipped.top < screenRect.top) clipped.top = screenRect.top;
-    if (clipped.right > screenRect.right) clipped.right = screenRect.right;
-    if (clipped.bottom > screenRect.bottom) clipped.bottom = screenRect.bottom;
-
+    // 选区先裁到虚拟桌面，再换算为屏幕位图局部坐标
+    int screenX = 0;
+    int screenY = 0;
+    RECT clipped = ClipRectToVirtualScreen(selection, &screenX, &screenY);
     int width = clipped.right - clipped.left;
     int height = clipped.bottom - clipped.top;
     if (width <= 0 || height <= 0)
         return;
 
-    int x = clipped.left - screenRect.left;
-    int y = clipped.top - screenRect.top;
+    int x = clipped.left - screenX;
+    int y = clipped.top - screenY;
 
     if (m_pCapturedBitmap)
         delete m_pCapturedBitmap;
@@ -279,6 +278,7 @@ void ScreenCapture::CompleteSelection(const RECT& selection, bool rememberSelect
 
     if (m_pApp && m_pCapturedBitmap)
     {
+        // 所有权交给编辑器，本地指针随后置空避免双重释放
         m_pApp->OnCaptureComplete(m_pCapturedBitmap);
         m_pCapturedBitmap = nullptr;
     }
@@ -425,33 +425,6 @@ void ScreenCapture::UpdateSelection(POINT pt)
     }
     
     InvalidateRect(m_hwnd, NULL, FALSE);
-}
-
-void ScreenCapture::ConfirmSelection()
-{
-    if (IsRectEmpty(&m_selectRect))
-        return;
-    
-    // 从屏幕截图中裁剪选区
-    int x = m_selectRect.left - GetSystemMetrics(SM_XVIRTUALSCREEN);
-    int y = m_selectRect.top - GetSystemMetrics(SM_YVIRTUALSCREEN);
-    int width = m_selectRect.right - m_selectRect.left;
-    int height = m_selectRect.bottom - m_selectRect.top;
-    
-    if (m_pCapturedBitmap)
-        delete m_pCapturedBitmap;
-    
-    m_pCapturedBitmap = m_pScreenBitmap->Clone(x, y, width, height, PixelFormat32bppARGB);
-    
-    // 关闭捕获窗口
-    Cancel();
-    
-    // 打开编辑器
-    if (m_pApp && m_pCapturedBitmap)
-    {
-        m_pApp->OnCaptureComplete(m_pCapturedBitmap);
-        m_pCapturedBitmap = nullptr;  // 转移所有权
-    }
 }
 
 void ScreenCapture::DrawOverlay(HDC hdc)

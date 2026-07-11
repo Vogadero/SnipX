@@ -77,6 +77,7 @@ void TrayIcon::ShowContextMenu()
 
     AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
 
+    // 历史记录子菜单按配置动态生成；空列表时显示占位项
     HMENU hHistoryMenu = CreatePopupMenu();
     std::vector<HistoryItem> historyItems = m_pApp->GetConfig()->GetHistoryItems();
     if (historyItems.empty())

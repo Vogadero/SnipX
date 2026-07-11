@@ -10,60 +10,90 @@
 #include <crtdbg.h>
 #include <windows.h>
 
-// 内存泄漏检查器类
+/**
+ * Debug 模式下的 CRT 内存检查封装。
+ *
+ * 仅在 `_DEBUG` 构建启用；Release 下相关宏为空操作。
+ */
 class MemoryChecker
 {
 public:
-    // 初始化内存检查
+    /**
+     * 开启 CRT 内存分配跟踪与退出时泄漏报告。
+     */
     static void Initialize()
     {
         _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-        
-        // 设置内存泄漏报告模式
+
+        // 将警告/错误/断言输出到调试器
         _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
         _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
         _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
     }
-    
-    // 设置内存断点（在特定分配编号处中断）
+
+    /**
+     * 在指定分配序号处触发断点，便于定位泄漏来源。
+     *
+     * @param allocNumber CRT 分配序号。
+     */
     static void SetBreakAlloc(long allocNumber)
     {
         _CrtSetBreakAlloc(allocNumber);
     }
-    
-    // 检查内存泄漏
+
+    /**
+     * 立即扫描并输出当前内存泄漏。
+     *
+     * @return 检测到泄漏时返回 true。
+     */
     static bool CheckMemoryLeaks()
     {
         return _CrtDumpMemoryLeaks() != 0;
     }
-    
-    // 获取当前内存状态
+
+    /**
+     * 记录当前堆状态快照。
+     *
+     * @param state 输出状态。
+     */
     static void GetMemoryState(_CrtMemState* state)
     {
         _CrtMemCheckpoint(state);
     }
-    
-    // 比较两个内存状态
-    static bool CompareMemoryState(const _CrtMemState* oldState, 
+
+    /**
+     * 比较两个内存状态快照。
+     *
+     * @return 存在差异时返回 true。
+     */
+    static bool CompareMemoryState(const _CrtMemState* oldState,
                                    const _CrtMemState* newState,
                                    _CrtMemState* diffState)
     {
         return _CrtMemDifference(diffState, oldState, newState) != 0;
     }
-    
-    // 输出内存状态
+
+    /**
+     * 输出内存状态统计信息。
+     */
     static void DumpMemoryState(const _CrtMemState* state)
     {
         _CrtMemDumpStatistics(state);
     }
-    
-    // 验证堆完整性
+
+    /**
+     * 验证堆完整性。
+     *
+     * @return 堆正常时返回 true。
+     */
     static bool ValidateHeap()
     {
         return _CrtCheckMemory() != 0;
     }
-    
-    // 输出所有对象
+
+    /**
+     * 输出当前所有堆对象。
+     */
     static void DumpAllObjects()
     {
         _CrtMemDumpAllObjectsSince(NULL);

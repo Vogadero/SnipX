@@ -11,7 +11,9 @@
 
 #pragma comment(lib, "psapi.lib")
 
-// 性能计时器
+/**
+ * 高精度性能计时器，基于 QueryPerformanceCounter。
+ */
 class PerformanceTimer
 {
 private:
@@ -19,7 +21,7 @@ private:
     LARGE_INTEGER m_startTime;
     const wchar_t* m_name;
     bool m_running;
-    
+
 public:
     PerformanceTimer(const wchar_t* name = L"Timer")
         : m_name(name)
@@ -27,79 +29,103 @@ public:
     {
         QueryPerformanceFrequency(&m_frequency);
     }
-    
-    // 开始计时
+
+    /**
+     * 开始计时。
+     */
     void Start()
     {
         QueryPerformanceCounter(&m_startTime);
         m_running = true;
     }
-    
-    // 停止计时并返回经过的时间（秒）
+
+    /**
+     * 停止计时并返回经过的时间（秒）。
+     *
+     * @return 未启动时返回 0。
+     */
     double Stop()
     {
         if (!m_running)
             return 0.0;
-        
+
         LARGE_INTEGER endTime;
         QueryPerformanceCounter(&endTime);
-        
+
         double elapsed = (double)(endTime.QuadPart - m_startTime.QuadPart) / m_frequency.QuadPart;
         m_running = false;
-        
+
         return elapsed;
     }
-    
-    // 停止计时并记录日志
+
+    /**
+     * 停止计时并写入日志。
+     *
+     * @return 经过时间（秒）。
+     */
     double StopAndLog()
     {
         double elapsed = Stop();
         LOG_INFO(L"%s took %.3f ms", m_name, elapsed * 1000.0);
         return elapsed;
     }
-    
-    // 获取当前经过的时间（不停止计时）
+
+    /**
+     * 获取当前经过的时间（不停止计时）。
+     *
+     * @return 经过时间（秒）。
+     */
     double Elapsed() const
     {
         if (!m_running)
             return 0.0;
-        
+
         LARGE_INTEGER currentTime;
         QueryPerformanceCounter(&currentTime);
-        
+
         return (double)(currentTime.QuadPart - m_startTime.QuadPart) / m_frequency.QuadPart;
     }
 };
 
-// 作用域计时器（RAII）
+/**
+ * 作用域计时器：构造时启动，析构时自动记录耗时。
+ */
 class ScopedTimer
 {
 private:
     PerformanceTimer m_timer;
-    
+
 public:
     ScopedTimer(const wchar_t* name)
         : m_timer(name)
     {
         m_timer.Start();
     }
-    
+
     ~ScopedTimer()
     {
         m_timer.StopAndLog();
     }
 };
 
-// 性能监控器
+/**
+ * 进程内存/CPU 等运行时指标采集工具。
+ */
 class PerformanceMonitor
 {
 public:
-    // 获取当前进程内存使用情况
+    /**
+     * 获取当前进程工作集与私有字节数。
+     *
+     * @param workingSet 输出工作集字节数。
+     * @param privateUsage 输出私有字节数。
+     * @return 成功时返回 true。
+     */
     static bool GetMemoryUsage(SIZE_T& workingSet, SIZE_T& privateUsage)
     {
         PROCESS_MEMORY_COUNTERS_EX pmc;
-        if (GetProcessMemoryInfo(GetCurrentProcess(), 
-                                 (PROCESS_MEMORY_COUNTERS*)&pmc, 
+        if (GetProcessMemoryInfo(GetCurrentProcess(),
+                                 (PROCESS_MEMORY_COUNTERS*)&pmc,
                                  sizeof(pmc)))
         {
             workingSet = pmc.WorkingSetSize;
@@ -108,8 +134,10 @@ public:
         }
         return false;
     }
-    
-    // 获取内存使用情况（MB）
+
+    /**
+     * 获取内存使用情况（MB）。
+     */
     static bool GetMemoryUsageMB(double& workingSetMB, double& privateUsageMB)
     {
         SIZE_T workingSet, privateUsage;
@@ -121,8 +149,10 @@ public:
         }
         return false;
     }
-    
-    // 记录内存使用情况
+
+    /**
+     * 将当前内存使用写入日志。
+     */
     static void LogMemoryUsage()
     {
         double workingSetMB, privateUsageMB;
@@ -132,8 +162,12 @@ public:
                      workingSetMB, privateUsageMB);
         }
     }
-    
-    // 获取 CPU 使用率（需要两次采样）
+
+    /**
+     * 估算当前进程 CPU 使用率（需多次调用形成采样差）。
+     *
+     * @return 大致百分比；采样不足时可能为 0。
+     */
     static double GetCPUUsage()
     {
         static ULONGLONG lastCPU = 0;

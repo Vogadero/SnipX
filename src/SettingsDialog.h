@@ -10,21 +10,35 @@
 
 class SnipXApp;
 
+/**
+ * 应用设置对话框。
+ *
+ * 提供热键/启动、保存路径、标注默认值等配置页，确认后写回 Config。
+ */
 class SettingsDialog
 {
 public:
+    /**
+     * 构造设置对话框。
+     *
+     * @param pApp 所属应用实例，用于读取和写回配置。
+     */
     SettingsDialog(SnipXApp* pApp);
     ~SettingsDialog();
-    
+
+    /**
+     * 以模态方式显示设置窗口，并在关闭后返回。
+     */
     void Show();
-    
+
 private:
     static INT_PTR CALLBACK DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    
+
     void CreateDialogWindow();
     void InitControls(HWND hwnd);
     void LoadSettings(HWND hwnd);
     void SaveSettings(HWND hwnd);
+
     /**
      * 根据自动保存开关即时启用或禁用自动保存路径控件。
      *
@@ -38,31 +52,36 @@ private:
      * @param hwnd 设置对话框窗口句柄。
      */
     void InitAdvancedControls(HWND hwnd);
+
     /**
      * 按当前选中的 Tab 显示对应设置页控件。
      */
     void UpdateTabVisibility();
+
     /**
      * 打开文件夹选择对话框并写入指定编辑框。
      *
      * @param editControlId 目标路径编辑框控件 ID。
      */
     void BrowseFolder(int editControlId);
+
     /**
      * 打开系统颜色选择器并更新默认标注颜色。
      */
     void ChooseDefaultColor();
+
     /**
      * 刷新 JPG 质量和标注粗细滑块的数值标签。
      */
     void UpdateSliderLabels();
+
     /**
      * 将所有子控件设置为默认 GUI 字体。
      *
      * @param hwnd 设置对话框窗口句柄。
      */
     void ApplyDefaultFont(HWND hwnd);
-    
+
     // 控件ID
     enum ControlIDs
     {
@@ -74,7 +93,7 @@ private:
         IDC_EXIT_QUIT = 1005,
         IDC_AUTO_START = 1006,
         IDC_TRAY_VISIBLE = 1007,
-        
+
         // 保存设置
         IDC_FORMAT_PNG = 1010,
         IDC_FORMAT_JPG = 1011,
@@ -96,23 +115,23 @@ private:
         IDC_DEFAULT_COLOR = 1030,
         IDC_DEFAULT_WIDTH = 1031,
         IDC_DEFAULT_WIDTH_LABEL = 1032,
-        
+
         // 按钮
         IDC_OK = 1040,
         IDC_CANCEL = 1041,
         IDC_APPLY = 1042,
-        
+
         // Tab控件
         IDC_TAB = 1050
     };
-    
+
     SnipXApp* m_pApp;
     HWND m_hwnd;
     HWND m_hTab;
-    
+
     // 当前Tab页
     int m_currentTab;
-    
+
     // Tab页窗口
     HWND m_hTabPages[3];
 };

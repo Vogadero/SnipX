@@ -12,9 +12,17 @@ using namespace Gdiplus;
 
 class SnipXApp;
 
+/**
+ * 屏幕录制器：按固定间隔采集虚拟桌面帧，保存 PNG 序列并可选导出 GIF。
+ */
 class ScreenRecorder
 {
 public:
+    /**
+     * 构造录屏器。
+     *
+     * @param pApp 所属应用实例，用于读取输出目录等配置。
+     */
     explicit ScreenRecorder(SnipXApp* pApp);
     ~ScreenRecorder();
 

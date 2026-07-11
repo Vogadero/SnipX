@@ -12,7 +12,9 @@ using namespace Gdiplus;
 
 class SnipXApp;
 
-// 标注工具类型
+/**
+ * 标注工具类型。
+ */
 enum AnnotationType
 {
     ANNO_NONE = 0,
@@ -28,7 +30,9 @@ enum AnnotationType
     ANNO_BLUR
 };
 
-// 箭头样式
+/**
+ * 箭头/直线标注的绘制样式。
+ */
 enum ArrowStyle
 {
     ARROW_STYLE_NORMAL = 0,
@@ -37,13 +41,31 @@ enum ArrowStyle
     ARROW_STYLE_OPEN
 };
 
-// 标注对象基类
+/**
+ * 标注对象抽象基类。
+ *
+ * 坐标默认使用编辑器客户区坐标系；具体子类负责自身几何数据的绘制、命中与变换。
+ */
 class Annotation
 {
 public:
     virtual ~Annotation() {}
+
+    /**
+     * 将标注绘制到指定 GDI+ 画布。
+     *
+     * @param graphics 目标画布；调用方保证非空。
+     */
     virtual void Draw(Graphics* graphics) = 0;
+
+    /**
+     * 判断点是否命中该标注。
+     *
+     * @param pt 客户区坐标。
+     * @return 命中时返回 true。
+     */
     virtual bool HitTest(Point pt) = 0;
+
     /**
      * 按指定偏移量移动标注对象。
      *
@@ -51,26 +73,30 @@ public:
      * @param dy 纵向偏移像素。
      */
     virtual void Move(int dx, int dy) = 0;
+
     /**
      * 获取标注对象在编辑器客户区坐标中的外接矩形。
      *
      * @return 标注对象当前边界。
      */
     virtual Rect GetBounds() const = 0;
+
     /**
      * 按新的外接矩形调整标注大小和位置。
      *
      * @param bounds 新的客户区坐标边界。
      */
     virtual void ResizeToBounds(const Rect& bounds) = 0;
-    
+
     AnnotationType type;
     Color color;
     int strokeWidth;
     bool selected;
 };
 
-// 矩形标注
+/**
+ * 矩形标注。
+ */
 class RectangleAnnotation : public Annotation
 {
 public:
@@ -82,7 +108,9 @@ public:
     void ResizeToBounds(const Rect& bounds) override;
 };
 
-// 椭圆标注
+/**
+ * 椭圆标注。
+ */
 class EllipseAnnotation : public Annotation
 {
 public:
@@ -94,7 +122,9 @@ public:
     void ResizeToBounds(const Rect& bounds) override;
 };
 
-// 箭头标注
+/**
+ * 箭头或直线标注。
+ */
 class ArrowAnnotation : public Annotation
 {
 public:
@@ -108,7 +138,9 @@ public:
     void ResizeToBounds(const Rect& bounds) override;
 };
 
-// 铅笔标注
+/**
+ * 铅笔自由绘制标注。
+ */
 class PencilAnnotation : public Annotation
 {
 public:
@@ -120,7 +152,9 @@ public:
     void ResizeToBounds(const Rect& bounds) override;
 };
 
-// 文字标注
+/**
+ * 文字标注。
+ */
 class TextAnnotation : public Annotation
 {
 public:
@@ -135,7 +169,9 @@ public:
     void ResizeToBounds(const Rect& bounds) override;
 };
 
-// 序号标签标注
+/**
+ * 序号标签标注。
+ */
 class NumberAnnotation : public Annotation
 {
 public:
@@ -148,7 +184,9 @@ public:
     void ResizeToBounds(const Rect& bounds) override;
 };
 
-// 高亮标注
+/**
+ * 半透明高亮标注。
+ */
 class HighlightAnnotation : public Annotation
 {
 public:
@@ -160,7 +198,11 @@ public:
     void ResizeToBounds(const Rect& bounds) override;
 };
 
-// 马赛克标注
+/**
+ * 马赛克标注。
+ *
+ * 会持有截图源位图副本，并缓存已生成的马赛克结果以降低重复绘制成本。
+ */
 class MosaicAnnotation : public Annotation
 {
 public:
@@ -182,13 +224,18 @@ public:
     void Move(int dx, int dy) override;
     Rect GetBounds() const override;
     void ResizeToBounds(const Rect& bounds) override;
+
     /**
      * 清空已生成的马赛克缓存，下次绘制时按当前区域重建。
      */
     void InvalidateCache();
 };
 
-// 模糊标注
+/**
+ * 模糊标注。
+ *
+ * 通过缩小再放大生成近似模糊，并对结果做局部缓存。
+ */
 class BlurAnnotation : public Annotation
 {
 public:
@@ -209,25 +256,44 @@ public:
     void Move(int dx, int dy) override;
     Rect GetBounds() const override;
     void ResizeToBounds(const Rect& bounds) override;
+
     /**
      * 清空已生成的模糊缓存，下次绘制时按当前区域重建。
      */
     void InvalidateCache();
 };
 
-// 编辑器主类
+/**
+ * 截图编辑器主类。
+ *
+ * 负责编辑器窗口、工具栏/底栏、标注绘制与交互、保存/复制/贴图等导出入口。
+ */
 class Editor
 {
 public:
+    /**
+     * 构造编辑器。
+     *
+     * @param pApp 所属应用实例。
+     */
     Editor(SnipXApp* pApp);
     ~Editor();
-    
+
+    /**
+     * 使用给定位图打开编辑器窗口。
+     *
+     * @param pBitmap 截图原图；编辑器接管其生命周期。
+     */
     void Open(Bitmap* pBitmap);
+
+    /**
+     * 关闭编辑器窗口并清理标注与位图资源。
+     */
     void Close();
-    
+
 private:
     static LRESULT CALLBACK EditorWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    
+
     void CreateEditorWindow();
     void DestroyEditorWindow();
     void DrawEditor(HDC hdc);
@@ -235,20 +301,24 @@ private:
     void DrawBottomBar(Graphics* graphics);
     void SaveImage();
     void CopyToClipboard();
+
     /**
      * 将当前编辑结果保存为临时 PNG 文件并提示文件位置，作为图片上传/图床功能的本地导出入口。
      */
     void UploadImage();
+
     /**
      * 对当前编辑结果执行基础 OCR 占位识别并复制提示文本。
      */
     void RunOCR();
+
     /**
      * 创建包含截图原图和所有标注的最终位图，供保存和复制使用。
      *
      * @return 调用方负责释放的合成位图，失败时返回 nullptr。
      */
     Bitmap* CreateCompositedBitmap();
+
     /**
      * 保存最终图片到指定文件，并在成功后写入历史记录。
      *
@@ -256,10 +326,16 @@ private:
      * @param format 图片格式。
      */
     void SaveImageToFile(const std::wstring& filename, const std::wstring& format);
-    
+
     // 标注操作
 
+    /**
+     * 按当前工具在指定图片坐标开始新建标注。
+     *
+     * @param pt 图片坐标（相对截图原图左上角）。
+     */
     void StartAnnotation(Point pt);
+
     /**
      * 根据鼠标位置更新当前正在绘制的标注对象。
      *
@@ -267,8 +343,19 @@ private:
      * @return 标注区域实际变化时返回 true。
      */
     bool UpdateAnnotation(Point pt);
+
+    /**
+     * 结束当前绘制中的标注，并将其加入已完成列表。
+     */
     void FinishAnnotation();
+
+    /**
+     * 按命中测试选中最上层标注。
+     *
+     * @param pt 客户区坐标。
+     */
     void SelectAnnotation(Point pt);
+
     /**
      * 按鼠标位置尝试开始拖拽移动已有标注。
      *
@@ -276,6 +363,7 @@ private:
      * @return 命中并开始移动时返回 true。
      */
     bool StartMoveSelectedAnnotation(Point pt);
+
     /**
      * 根据当前鼠标位置移动已选中的标注对象。
      *
@@ -283,6 +371,7 @@ private:
      * @return 标注位置实际变化时返回 true。
      */
     bool MoveSelectedAnnotation(Point pt);
+
     /**
      * 按鼠标位置尝试开始拖拽选中标注的缩放控制点。
      *
@@ -290,6 +379,7 @@ private:
      * @return 命中缩放控制点并进入缩放状态时返回 true。
      */
     bool StartResizeSelectedAnnotation(Point pt);
+
     /**
      * 根据当前鼠标位置调整已选中标注对象大小。
      *
@@ -297,15 +387,17 @@ private:
      * @return 标注尺寸或位置实际变化时返回 true。
      */
     bool ResizeSelectedAnnotation(Point pt);
+
     void DeleteSelectedAnnotation();
     void Undo();
     void Redo();
-    
+
     // UI 交互
     bool HitTestToolbar(Point pt, AnnotationType& tool);
     bool HitTestColorPicker(Point pt);
     bool HitTestStrokeWidth(Point pt);
     bool HitTestBottomBar(Point pt, int& action);
+
     /**
      * 命中测试预设颜色面板并返回被点击的颜色。
      *
@@ -314,6 +406,7 @@ private:
      * @return 命中颜色块时返回 true。
      */
     bool HitTestColorPanel(Point pt, Color& color);
+
     /**
      * 命中测试粗细滑块并按点击位置换算线宽。
      *
@@ -322,14 +415,17 @@ private:
      * @return 命中滑块区域时返回 true。
      */
     bool HitTestStrokeSlider(Point pt, int& width);
+
     /**
      * 切换颜色选择器面板显示状态。
      */
     void ToggleColorPanel();
+
     /**
      * 切换粗细滑块面板显示状态。
      */
     void ToggleStrokeSlider();
+
     /**
      * 根据鼠标位置更新工具栏、底部栏等 UI 悬停状态。
      *
@@ -337,36 +433,43 @@ private:
      * @return 悬停状态发生变化时返回 true。
      */
     bool UpdateHoverState(Point pt);
+
     /**
      * 绘制当前悬停控件的简易提示文本。
      *
      * @param graphics GDI+ 绘图对象。
      */
     void DrawHoverTooltip(Graphics* graphics);
+
     /**
      * 获取当前悬停控件的提示文本。
      *
      * @return 提示文本指针，无悬停提示时返回 nullptr。
      */
     const WCHAR* GetHoverTooltipText() const;
+
     /**
      * 打开系统颜色选择对话框并更新当前标注颜色。
      */
     void ChooseCurrentColor();
+
     /**
      * 在预设线宽之间循环切换当前标注粗细。
      */
     void CycleStrokeWidth();
+
     /**
      * 循环切换箭头工具样式。
      */
     void CycleArrowStyle();
+
     /**
      * 失效指定标注区域并附带边距，减少拖拽、缩放和绘制时的整窗刷新。
      *
      * @param bounds 标注在客户区坐标中的外接矩形。
      */
     void InvalidateAnnotationRect(const Rect& bounds);
+
     /**
      * 同时失效两个标注区域，用于移动、缩放前后位置合并刷新。
      *
@@ -378,21 +481,21 @@ private:
     SnipXApp* m_pApp;
     HWND m_hwnd;
     Bitmap* m_pBitmap;
-    
+
     // 标注工具
     AnnotationType m_currentTool;
     Color m_currentColor;
     int m_currentStrokeWidth;
     int m_nextNumberLabel;
     ArrowStyle m_currentArrowStyle;
-    
+
     std::vector<Annotation*> m_annotations;
     std::vector<Annotation*> m_undoStack;
-    
+
     // 当前正在绘制的标注
     Annotation* m_currentAnnotation;
     Annotation* m_selectedAnnotation;
-    
+
     // 交互状态
     bool m_drawing;
     bool m_movingAnnotation;
@@ -408,7 +511,7 @@ private:
     Rect m_resizeStartBounds;
     Point m_startPoint;
     Point m_lastPoint;
-    
+
     // UI 布局
     int m_toolbarHeight;
     int m_bottomBarHeight;

@@ -7,6 +7,14 @@
 
 ## [未发布]
 
+## [1.1.7] - 2026-07-11
+
+### 改进
+- 为 Config、SnipX、Editor、ScreenCapture、Tray/Hotkey 等核心模块补齐 JSDoc 风格文档注释
+- Config 保存路径抽取 WriteIniInt/WriteIniBool，减少重复 INI 写样板
+- 截图选区完成统一复用 ClipRectToVirtualScreen，并移除无调用的 ConfirmSelection 死路径
+- 编辑器底部按钮数量统一为常量，hover/tooltip 与 6 个底栏按钮对齐
+
 ## [1.1.6] - 2026-07-11
 
 ### 改进
