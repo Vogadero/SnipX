@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(SnipX VERSION 1.1.7 LANGUAGES CXX)
+project(SnipX VERSION 1.1.8 LANGUAGES CXX)
 
 # 设置C++标准
 set(CMAKE_CXX_STANDARD 17)
@@ -41,6 +41,7 @@ set(SOURCES
     src/ScreenRecorder.cpp
     src/Localization.cpp
     src/Platform.cpp
+    src/GdiplusUtils.cpp
     src/Logger.cpp
     src/Editor.cpp
     src/ColorPicker.cpp
@@ -58,6 +59,7 @@ set(HEADERS
     src/ScreenRecorder.h
     src/Localization.h
     src/Platform.h
+    src/GdiplusUtils.h
     src/Logger.h
     src/MemoryChecker.h
     src/PerformanceMonitor.h

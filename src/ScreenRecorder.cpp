@@ -2,6 +2,7 @@
 
 #include "ScreenRecorder.h"
 #include "SnipX.h"
+#include "GdiplusUtils.h"
 #include <shlobj.h>
 #include <fstream>
 #include <stdio.h>
@@ -11,40 +12,6 @@ namespace
     const UINT_PTR RECORD_TIMER_ID = 1;
     const UINT RECORD_INTERVAL_MS = 500;
     const int GIF_MAX_FRAMES = 80;
-
-    /**
-     * 获取 GDI+ 图片编码器 CLSID。
-     *
-     * @param format MIME 格式，例如 image/png。
-     * @param pClsid 输出编码器 CLSID。
-     * @return 找到编码器时返回 true。
-     */
-    bool GetEncoderClsidByMime(const WCHAR* format, CLSID* pClsid)
-    {
-        UINT num = 0;
-        UINT size = 0;
-        GetImageEncodersSize(&num, &size);
-        if (size == 0)
-            return false;
-
-        ImageCodecInfo* pImageCodecInfo = (ImageCodecInfo*)malloc(size);
-        if (!pImageCodecInfo)
-            return false;
-
-        GetImageEncoders(num, size, pImageCodecInfo);
-        for (UINT i = 0; i < num; i++)
-        {
-            if (wcscmp(pImageCodecInfo[i].MimeType, format) == 0)
-            {
-                *pClsid = pImageCodecInfo[i].Clsid;
-                free(pImageCodecInfo);
-                return true;
-            }
-        }
-
-        free(pImageCodecInfo);
-        return false;
-    }
 
     /**
      * 生成用于目录名的本地时间戳。
@@ -240,26 +207,8 @@ bool ScreenRecorder::ExportGif()
 
 bool ScreenRecorder::CaptureFrame()
 {
-    int screenX = GetSystemMetrics(SM_XVIRTUALSCREEN);
-    int screenY = GetSystemMetrics(SM_YVIRTUALSCREEN);
-    int screenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-    int screenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-    if (screenWidth <= 0 || screenHeight <= 0)
-        return false;
-
-    HDC hdcScreen = GetDC(NULL);
-    HDC hdcMem = CreateCompatibleDC(hdcScreen);
-    HBITMAP hBitmap = CreateCompatibleBitmap(hdcScreen, screenWidth, screenHeight);
-    HBITMAP hOldBitmap = (HBITMAP)SelectObject(hdcMem, hBitmap);
-
-    BitBlt(hdcMem, 0, 0, screenWidth, screenHeight, hdcScreen, screenX, screenY, SRCCOPY);
-    Bitmap* pBitmap = Bitmap::FromHBITMAP(hBitmap, NULL);
-
-    SelectObject(hdcMem, hOldBitmap);
-    DeleteObject(hBitmap);
-    DeleteDC(hdcMem);
-    ReleaseDC(NULL, hdcScreen);
-
+    // 定时热路径：截整屏 → 编码 PNG → 记录帧路径
+    Bitmap* pBitmap = CaptureVirtualScreenBitmap();
     if (!pBitmap)
         return false;
 

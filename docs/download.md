@@ -2,9 +2,9 @@
 
 ## 📦 最新版本
 
-### v1.1.7（2026-07-11）
+### v1.1.8（2026-07-12）
 
-这是 SnipX 的文档注释与结构清理版本：补齐核心模块 JSDoc 风格文档，并统一配置写出、截图选区完成和编辑器底部按钮交互。
+这是 SnipX 的公共工具封装版本：统一编码器、虚拟桌面截图、放大镜与剪贴板实现，并补充关键热路径注释。
 
 ---
 
@@ -18,29 +18,29 @@
 - 无需安装，下载即用
 - 适合便携使用
 
-<a href="https://github.com/vogadero/SnipX/releases/download/v1.1.7/SnipX.exe" class="download-button">下载 SnipX.exe</a>
+<a href="https://github.com/vogadero/SnipX/releases/download/v1.1.8/SnipX.exe" class="download-button">下载 SnipX.exe</a>
 
 ---
 
 ### 📁 完整包
 
-**SnipX-1.1.7.zip**
+**SnipX-1.1.8.zip**
 
 - 包含程序和离线文档
 - 适合归档、离线使用和分发
 
-<a href="https://github.com/vogadero/SnipX/releases/download/v1.1.7/SnipX-1.1.7.zip" class="download-button">下载完整包</a>
+<a href="https://github.com/vogadero/SnipX/releases/download/v1.1.8/SnipX-1.1.8.zip" class="download-button">下载完整包</a>
 
 ---
 
 ### 🔒 校验文件
 
-**SnipX-1.1.7-SHA256.txt**
+**SnipX-1.1.8-SHA256.txt**
 
 - 包含 Release 资产的 SHA256 校验和
 - 用于验证下载文件完整性
 
-<a href="https://github.com/vogadero/SnipX/releases/download/v1.1.7/SnipX-1.1.7-SHA256.txt" class="download-button">下载 SHA256 校验文件</a>
+<a href="https://github.com/vogadero/SnipX/releases/download/v1.1.8/SnipX-1.1.8-SHA256.txt" class="download-button">下载 SHA256 校验文件</a>
 
 ::: tip 安装版说明
 仓库提供了 `installer.iss` 作为 Inno Setup 安装脚本，便于后续制作安装包；当前 GitHub Release workflow 上传的是便携 exe、zip 和 SHA256 文件。
@@ -88,7 +88,7 @@
 
 ### 使用完整包
 
-1. **下载** `SnipX-1.1.7.zip`
+1. **下载** `SnipX-1.1.8.zip`
 2. **解压** 到任意位置
 3. **运行** 双击 `SnipX.exe`
 4. **查看文档** 阅读随包文档了解更多功能
@@ -111,6 +111,15 @@
 ---
 
 ## 📝 版本历史
+
+### v1.1.8（2026-07-12）
+
+**公共 GDI+ 工具封装** ✨
+
+**维护改进**：
+- ✅ 统一编码器、虚拟桌面截图、放大镜和剪贴板 helper
+- ✅ 截图/录屏/取色/编辑器/贴图复用公共实现
+- ✅ 底部栏 hover 复用统一点击命中逻辑
 
 ### v1.1.7（2026-07-11）
 
@@ -201,20 +210,20 @@
 
 ### 文件校验
 
-请下载同版本的 `SnipX-1.1.7-SHA256.txt`，并将其中的哈希值与本地文件计算结果比对。
+请下载同版本的 `SnipX-1.1.8-SHA256.txt`，并将其中的哈希值与本地文件计算结果比对。
 
 **Windows PowerShell**：
 
 ```powershell
 Get-FileHash SnipX.exe -Algorithm SHA256
-Get-FileHash SnipX-1.1.7.zip -Algorithm SHA256
+Get-FileHash SnipX-1.1.8.zip -Algorithm SHA256
 ```
 
 **命令提示符**：
 
 ```cmd
 certutil -hashfile SnipX.exe SHA256
-certutil -hashfile SnipX-1.1.7.zip SHA256
+certutil -hashfile SnipX-1.1.8.zip SHA256
 ```
 
 ---

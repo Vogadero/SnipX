@@ -7,6 +7,14 @@
 
 ## [未发布]
 
+## [1.1.8] - 2026-07-12
+
+### 改进
+- 新增 GdiplusUtils 公共工具：统一编码器、虚拟桌面截图、放大镜与剪贴板 helper
+- ScreenCapture / ScreenRecorder / ColorPicker / Editor / PinWindow 接入公共实现，减少跨文件重复代码
+- 编辑器底部 hover 复用 HitTestBottomBar，避免布局逻辑分叉
+- 补充版本宏与热路径中文注释（截图启动、虚拟屏坐标换算、录屏帧保存）
+
 ## [1.1.7] - 2026-07-11
 
 ### 改进

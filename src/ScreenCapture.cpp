@@ -3,6 +3,7 @@
 #include "ScreenCapture.h"
 #include "SnipX.h"
 #include "Config.h"
+#include "GdiplusUtils.h"
 #include <algorithm>
 #include <cstdlib>
 #include <dwmapi.h>
@@ -15,36 +16,6 @@
 
 namespace
 {
-    /**
-     * 获取 GDI+ 图片编码器 CLSID。
-     */
-    bool GetEncoderClsidByMime(const WCHAR* format, CLSID* pClsid)
-    {
-        UINT num = 0;
-        UINT size = 0;
-        GetImageEncodersSize(&num, &size);
-        if (size == 0)
-            return false;
-
-        ImageCodecInfo* pImageCodecInfo = (ImageCodecInfo*)malloc(size);
-        if (!pImageCodecInfo)
-            return false;
-
-        GetImageEncoders(num, size, pImageCodecInfo);
-        for (UINT i = 0; i < num; i++)
-        {
-            if (wcscmp(pImageCodecInfo[i].MimeType, format) == 0)
-            {
-                *pClsid = pImageCodecInfo[i].Clsid;
-                free(pImageCodecInfo);
-                return true;
-            }
-        }
-
-        free(pImageCodecInfo);
-        return false;
-    }
-
     /**
      * 生成用于滚动截图文件名的本地时间戳。
      */
@@ -69,11 +40,12 @@ namespace
     RECT ClipRectToVirtualScreen(const RECT& rect, int* outOriginX = nullptr, int* outOriginY = nullptr)
     {
         RECT clipped = rect;
+        VirtualScreenInfo screen = GetVirtualScreenInfo();
         RECT screenRect;
-        screenRect.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
-        screenRect.top = GetSystemMetrics(SM_YVIRTUALSCREEN);
-        screenRect.right = screenRect.left + GetSystemMetrics(SM_CXVIRTUALSCREEN);
-        screenRect.bottom = screenRect.top + GetSystemMetrics(SM_CYVIRTUALSCREEN);
+        screenRect.left = screen.x;
+        screenRect.top = screen.y;
+        screenRect.right = screen.x + screen.width;
+        screenRect.bottom = screen.y + screen.height;
 
         if (clipped.left < screenRect.left) clipped.left = screenRect.left;
         if (clipped.top < screenRect.top) clipped.top = screenRect.top;
@@ -113,16 +85,12 @@ void ScreenCapture::Start()
 {
     if (m_capturing)
         return;
-    
+
     m_capturing = true;
-    
-    // 捕获屏幕
+
+    // 先截整屏，再枚举窗口，最后建遮罩层进入交互选区
     CaptureScreen();
-    
-    // 检测窗口
     DetectWindows();
-    
-    // 创建覆盖窗口
     CreateCaptureWindow();
 }
 
@@ -131,11 +99,12 @@ void ScreenCapture::CaptureFullScreen()
     if (m_capturing)
         return;
 
+    VirtualScreenInfo screen = GetVirtualScreenInfo();
     RECT fullScreenRect;
-    fullScreenRect.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
-    fullScreenRect.top = GetSystemMetrics(SM_YVIRTUALSCREEN);
-    fullScreenRect.right = fullScreenRect.left + GetSystemMetrics(SM_CXVIRTUALSCREEN);
-    fullScreenRect.bottom = fullScreenRect.top + GetSystemMetrics(SM_CYVIRTUALSCREEN);
+    fullScreenRect.left = screen.x;
+    fullScreenRect.top = screen.y;
+    fullScreenRect.right = screen.x + screen.width;
+    fullScreenRect.bottom = screen.y + screen.height;
 
     CaptureScreen();
     CompleteSelection(fullScreenRect, false);
@@ -190,8 +159,10 @@ bool ScreenCapture::CaptureScrollingWindow()
         if (!m_pScreenBitmap)
             continue;
 
-        int x = windowRect.left - GetSystemMetrics(SM_XVIRTUALSCREEN);
-        int y = windowRect.top - GetSystemMetrics(SM_YVIRTUALSCREEN);
+        // 窗口矩形是屏幕坐标，需减去虚拟桌面原点才是位图像素坐标
+        VirtualScreenInfo screen = GetVirtualScreenInfo();
+        int x = windowRect.left - screen.x;
+        int y = windowRect.top - screen.y;
         Bitmap* segment = m_pScreenBitmap->Clone(x, y, width, height, PixelFormat32bppARGB);
         if (segment)
         {
@@ -294,31 +265,10 @@ void ScreenCapture::Cancel()
 
 void ScreenCapture::CaptureScreen()
 {
-    // 获取屏幕尺寸（支持多显示器）
-    int screenX = GetSystemMetrics(SM_XVIRTUALSCREEN);
-    int screenY = GetSystemMetrics(SM_YVIRTUALSCREEN);
-    int screenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-    int screenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-    
-    // 创建屏幕DC
-    HDC hdcScreen = GetDC(NULL);
-    HDC hdcMem = CreateCompatibleDC(hdcScreen);
-    HBITMAP hBitmap = CreateCompatibleBitmap(hdcScreen, screenWidth, screenHeight);
-    HBITMAP hOldBitmap = (HBITMAP)SelectObject(hdcMem, hBitmap);
-    
-    // 复制屏幕内容
-    BitBlt(hdcMem, 0, 0, screenWidth, screenHeight, hdcScreen, screenX, screenY, SRCCOPY);
-    
-    // 转换为GDI+ Bitmap
+    // 捕获完整虚拟桌面，保证多显示器坐标一致
     if (m_pScreenBitmap)
         delete m_pScreenBitmap;
-    m_pScreenBitmap = Bitmap::FromHBITMAP(hBitmap, NULL);
-    
-    // 清理
-    SelectObject(hdcMem, hOldBitmap);
-    DeleteObject(hBitmap);
-    DeleteDC(hdcMem);
-    ReleaseDC(NULL, hdcScreen);
+    m_pScreenBitmap = CaptureVirtualScreenBitmap();
 }
 
 void ScreenCapture::DetectWindows()
@@ -373,16 +323,12 @@ void ScreenCapture::CreateCaptureWindow()
     wc.lpszClassName = L"SnipXCaptureWindow";
     RegisterClassExW(&wc);
     
-    // 创建全屏覆盖窗口
-    int screenX = GetSystemMetrics(SM_XVIRTUALSCREEN);
-    int screenY = GetSystemMetrics(SM_YVIRTUALSCREEN);
-    int screenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-    int screenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-    
+    // 创建覆盖整个虚拟桌面的遮罩窗口
+    VirtualScreenInfo screen = GetVirtualScreenInfo();
     m_hwnd = CreateWindowExW(WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_LAYERED,
                             L"SnipXCaptureWindow", L"",
                             WS_POPUP,
-                            screenX, screenY, screenWidth, screenHeight,
+                            screen.x, screen.y, screen.width, screen.height,
                             NULL, NULL, m_pApp->GetInstance(), this);
     
     // 设置窗口透明度
@@ -438,16 +384,17 @@ void ScreenCapture::DrawOverlay(HDC hdc)
         graphics.DrawImage(m_pScreenBitmap, 0, 0);
     }
     
-    // 绘制半透明遮罩
+    // 绘制半透明遮罩：四向挖空选区，突出当前选择
     SolidBrush maskBrush(Color(128, 0, 0, 0));
-    int screenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-    int screenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-    
+    VirtualScreenInfo screen = GetVirtualScreenInfo();
+    int screenWidth = screen.width;
+    int screenHeight = screen.height;
+
     if (!IsRectEmpty(&m_selectRect))
     {
         // 绘制选区外的遮罩（四个矩形）
-        int x = m_selectRect.left - GetSystemMetrics(SM_XVIRTUALSCREEN);
-        int y = m_selectRect.top - GetSystemMetrics(SM_YVIRTUALSCREEN);
+        int x = m_selectRect.left - screen.x;
+        int y = m_selectRect.top - screen.y;
         int w = m_selectRect.right - m_selectRect.left;
         int h = m_selectRect.bottom - m_selectRect.top;
         
@@ -498,39 +445,10 @@ void ScreenCapture::DrawMagnifier(HDC hdc, POINT pt)
 {
     if (!m_pScreenBitmap)
         return;
-    
+
     Graphics graphics(hdc);
-    
-    int screenX = GetSystemMetrics(SM_XVIRTUALSCREEN);
-    int screenY = GetSystemMetrics(SM_YVIRTUALSCREEN);
-    
-    int srcX = pt.x - screenX - MAGNIFIER_ZOOM / 2;
-    int srcY = pt.y - screenY - MAGNIFIER_ZOOM / 2;
-    
-    // 放大镜位置（鼠标右下方）
-    int magX = pt.x - screenX + 20;
-    int magY = pt.y - screenY + 20;
-    
-    // 绘制放大镜背景
-    SolidBrush bgBrush(Color(255, 50, 50, 50));
-    graphics.FillRectangle(&bgBrush, magX, magY, MAGNIFIER_SIZE, MAGNIFIER_SIZE);
-    
-    // 绘制放大内容
-    graphics.DrawImage(m_pScreenBitmap, 
-                      Rect(magX, magY, MAGNIFIER_SIZE, MAGNIFIER_SIZE),
-                      srcX, srcY, MAGNIFIER_ZOOM, MAGNIFIER_ZOOM,
-                      UnitPixel);
-    
-    // 绘制十字线
-    Pen crossPen(Color(255, 255, 0, 0), 1);
-    int centerX = magX + MAGNIFIER_SIZE / 2;
-    int centerY = magY + MAGNIFIER_SIZE / 2;
-    graphics.DrawLine(&crossPen, centerX, magY, centerX, magY + MAGNIFIER_SIZE);
-    graphics.DrawLine(&crossPen, magX, centerY, magX + MAGNIFIER_SIZE, centerY);
-    
-    // 绘制边框
-    Pen borderPen(Color(255, 255, 255, 255), 2);
-    graphics.DrawRectangle(&borderPen, magX, magY, MAGNIFIER_SIZE, MAGNIFIER_SIZE);
+    // 统一放大镜绘制，保持截图与取色器观感一致
+    DrawMagnifierOverlay(graphics, m_pScreenBitmap, pt, MAGNIFIER_SIZE, MAGNIFIER_ZOOM);
 }
 
 LRESULT CALLBACK ScreenCapture::CaptureWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -578,20 +496,23 @@ LRESULT CALLBACK ScreenCapture::CaptureWndProc(HWND hwnd, UINT msg, WPARAM wPara
         if (pThis)
         {
             pThis->m_selecting = true;
-            pThis->m_startPoint.x = GET_X_LPARAM(lParam) + GetSystemMetrics(SM_XVIRTUALSCREEN);
-            pThis->m_startPoint.y = GET_Y_LPARAM(lParam) + GetSystemMetrics(SM_YVIRTUALSCREEN);
+            // 客户区坐标 + 虚拟桌面原点 → 屏幕坐标
+            VirtualScreenInfo screen = GetVirtualScreenInfo();
+            pThis->m_startPoint.x = GET_X_LPARAM(lParam) + screen.x;
+            pThis->m_startPoint.y = GET_Y_LPARAM(lParam) + screen.y;
             SetCapture(hwnd);
         }
         return 0;
     }
-    
+
     case WM_MOUSEMOVE:
     {
         if (pThis)
         {
+            VirtualScreenInfo screen = GetVirtualScreenInfo();
             POINT pt;
-            pt.x = GET_X_LPARAM(lParam) + GetSystemMetrics(SM_XVIRTUALSCREEN);
-            pt.y = GET_Y_LPARAM(lParam) + GetSystemMetrics(SM_YVIRTUALSCREEN);
+            pt.x = GET_X_LPARAM(lParam) + screen.x;
+            pt.y = GET_Y_LPARAM(lParam) + screen.y;
             pThis->UpdateSelection(pt);
         }
         return 0;

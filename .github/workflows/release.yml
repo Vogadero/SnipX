@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version without leading v, for example 1.1.7'
+        description: 'Release version without leading v, for example 1.1.8'
         required: true
-        default: '1.1.7'
+        default: '1.1.8'
       prerelease:
         description: 'Mark this release as a prerelease'
         required: true
@@ -43,7 +43,7 @@ jobs:
         } else {
           $version = '${{ inputs.version }}'
           if ([string]::IsNullOrWhiteSpace($version)) {
-            $version = '1.1.7'
+            $version = '1.1.8'
           }
           $tag = "v$version"
         }

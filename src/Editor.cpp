@@ -3,6 +3,7 @@
 #include "Editor.h"
 #include "SnipX.h"
 #include "Localization.h"
+#include "GdiplusUtils.h"
 #include "resource.h"
 #include <algorithm>
 #include <cmath>
@@ -1237,47 +1238,18 @@ void Editor::SaveImage()
     }
 }
 
-int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
-{
-    UINT num = 0;
-    UINT size = 0;
-    
-    GetImageEncodersSize(&num, &size);
-    if (size == 0)
-        return -1;
-    
-    ImageCodecInfo* pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
-    if (pImageCodecInfo == NULL)
-        return -1;
-    
-    GetImageEncoders(num, size, pImageCodecInfo);
-    
-    for (UINT i = 0; i < num; i++)
-    {
-        if (wcscmp(pImageCodecInfo[i].MimeType, format) == 0)
-        {
-            *pClsid = pImageCodecInfo[i].Clsid;
-            free(pImageCodecInfo);
-            return i;
-        }
-    }
-    
-    free(pImageCodecInfo);
-    return -1;
-}
-
 void Editor::SaveImageToFile(const std::wstring& filename, const std::wstring& format)
 {
     Bitmap* finalBitmap = CreateCompositedBitmap();
     if (!finalBitmap)
         return;
-    
+
     // 获取编码器
     CLSID encoderClsid;
     Status saveStatus = GenericError;
     if (format == L"jpeg")
     {
-        if (GetEncoderClsid(L"image/jpeg", &encoderClsid) >= 0)
+        if (GetEncoderClsidByMime(L"image/jpeg", &encoderClsid))
         {
             // 设置 JPEG 质量
             EncoderParameters encoderParams;
@@ -1293,14 +1265,14 @@ void Editor::SaveImageToFile(const std::wstring& filename, const std::wstring& f
     }
     else if (format == L"bmp")
     {
-        if (GetEncoderClsid(L"image/bmp", &encoderClsid) >= 0)
+        if (GetEncoderClsidByMime(L"image/bmp", &encoderClsid))
         {
             saveStatus = finalBitmap->Save(filename.c_str(), &encoderClsid, NULL);
         }
     }
     else
     {
-        if (GetEncoderClsid(L"image/png", &encoderClsid) >= 0)
+        if (GetEncoderClsidByMime(L"image/png", &encoderClsid))
         {
             saveStatus = finalBitmap->Save(filename.c_str(), &encoderClsid, NULL);
         }
@@ -1326,25 +1298,18 @@ void Editor::CopyToClipboard()
     Bitmap* finalBitmap = CreateCompositedBitmap();
     if (!finalBitmap)
         return;
-    
+
     HBITMAP hBitmap = NULL;
     finalBitmap->GetHBITMAP(Color(255, 255, 255), &hBitmap);
     delete finalBitmap;
 
     if (!hBitmap)
         return;
-    
-    if (OpenClipboard(m_hwnd))
+
+    // 成功后系统接管 HBITMAP；失败路径由 helper 释放
+    if (SetClipboardBitmap(m_hwnd, hBitmap))
     {
-        EmptyClipboard();
-        SetClipboardData(CF_BITMAP, hBitmap);
-        CloseClipboard();
-        
         MessageBoxW(m_hwnd, L10n(L"已复制到剪贴板！", L"Copied to clipboard!"), L"SnipX", MB_ICONINFORMATION);
-    }
-    else
-    {
-        DeleteObject(hBitmap);
     }
 }
 
@@ -1370,27 +1335,8 @@ void Editor::RunOCR()
 {
     const WCHAR* text = L10n(L"OCR 文字识别占位：当前截图已准备完成，后续可接入 Windows OCR 或第三方 OCR 引擎。",
                             L"OCR placeholder: the current screenshot is ready. Windows OCR or a third-party OCR engine can be integrated later.");
-    if (OpenClipboard(m_hwnd))
-    {
-        EmptyClipboard();
-        size_t bytes = (wcslen(text) + 1) * sizeof(WCHAR);
-        HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, bytes);
-        if (hMem)
-        {
-            void* pMem = GlobalLock(hMem);
-            if (pMem)
-            {
-                memcpy(pMem, text, bytes);
-                GlobalUnlock(hMem);
-                SetClipboardData(CF_UNICODETEXT, hMem);
-            }
-            else
-            {
-                GlobalFree(hMem);
-            }
-        }
-        CloseClipboard();
-    }
+    // 占位实现：先把说明文本复制到剪贴板，便于用户粘贴
+    SetClipboardUnicodeText(m_hwnd, text);
     MessageBoxW(m_hwnd, text, L"SnipX OCR", MB_ICONINFORMATION);
 }
 
@@ -2157,24 +2103,9 @@ bool Editor::UpdateHoverState(Point pt)
     hoverColor = GetColorPickerRect().Contains(pt);
     hoverStroke = GetStrokeWidthRect().Contains(pt);
 
-    RECT rc;
-    GetClientRect(m_hwnd, &rc);
-    int bottomY = rc.bottom - m_bottomBarHeight;
-    if (pt.Y >= bottomY + 10 && pt.Y <= bottomY + 40)
-    {
-        int x = 10;
-        int btnWidth = 80;
-        int spacing = 10;
-        for (int i = 0; i < BOTTOM_BUTTON_COUNT; i++)
-        {
-            if (pt.X >= x && pt.X <= x + btnWidth)
-            {
-                hoverBottom = i;
-                break;
-            }
-            x += btnWidth + spacing;
-        }
-    }
+    // 底部栏复用统一命中测试，避免与 HitTestBottomBar 布局分叉
+    if (!HitTestBottomBar(pt, hoverBottom))
+        hoverBottom = -1;
 
     if (m_hoverTool != hoverTool)
     {

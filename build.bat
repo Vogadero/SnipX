@@ -49,6 +49,7 @@ cl /c /O2 /GL /EHsc /MT /utf-8 /W3 /nologo ^
    src\ScreenRecorder.cpp ^
    src\Localization.cpp ^
    src\Platform.cpp ^
+   src\GdiplusUtils.cpp ^
    src\Logger.cpp ^
    src\Editor.cpp ^
    src\ColorPicker.cpp ^
@@ -73,6 +74,7 @@ link /OUT:bin\SnipX.exe /SUBSYSTEM:WINDOWS /LTCG /OPT:REF /OPT:ICF ^
      obj\ScreenRecorder.obj ^
      obj\Localization.obj ^
      obj\Platform.obj ^
+     obj\GdiplusUtils.obj ^
      obj\Logger.obj ^
      obj\Editor.obj ^
      obj\ColorPicker.obj ^
@@ -118,6 +120,7 @@ g++ -o bin\SnipX.exe ^
     src\ScreenRecorder.cpp ^
     src\Localization.cpp ^
     src\Platform.cpp ^
+    src\GdiplusUtils.cpp ^
     src\Logger.cpp ^
     src\Editor.cpp ^
     src\ColorPicker.cpp ^

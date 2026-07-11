@@ -2,6 +2,7 @@
 
 #include "ColorPicker.h"
 #include "SnipX.h"
+#include "GdiplusUtils.h"
 #include <stdio.h>
 #include <algorithm>
 #include <windowsx.h>
@@ -27,31 +28,14 @@ void ColorPicker::Start()
 {
     if (m_picking)
         return;
-    
+
     m_picking = true;
-    
-    // 捕获屏幕
-    int screenX = GetSystemMetrics(SM_XVIRTUALSCREEN);
-    int screenY = GetSystemMetrics(SM_YVIRTUALSCREEN);
-    int screenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-    int screenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-    
-    HDC hdcScreen = GetDC(NULL);
-    HDC hdcMem = CreateCompatibleDC(hdcScreen);
-    HBITMAP hBitmap = CreateCompatibleBitmap(hdcScreen, screenWidth, screenHeight);
-    HBITMAP hOldBitmap = (HBITMAP)SelectObject(hdcMem, hBitmap);
-    
-    BitBlt(hdcMem, 0, 0, screenWidth, screenHeight, hdcScreen, screenX, screenY, SRCCOPY);
-    
+
+    // 捕获完整虚拟桌面作为取色底图
     if (m_pScreenBitmap)
         delete m_pScreenBitmap;
-    m_pScreenBitmap = Bitmap::FromHBITMAP(hBitmap, NULL);
-    
-    SelectObject(hdcMem, hOldBitmap);
-    DeleteObject(hBitmap);
-    DeleteDC(hdcMem);
-    ReleaseDC(NULL, hdcScreen);
-    
+    m_pScreenBitmap = CaptureVirtualScreenBitmap();
+
     // 创建覆盖窗口
     CreatePickerWindow();
 }
@@ -72,15 +56,12 @@ void ColorPicker::CreatePickerWindow()
     wc.lpszClassName = L"SnipXColorPickerWindow";
     RegisterClassExW(&wc);
     
-    int screenX = GetSystemMetrics(SM_XVIRTUALSCREEN);
-    int screenY = GetSystemMetrics(SM_YVIRTUALSCREEN);
-    int screenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-    int screenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-    
+    VirtualScreenInfo screen = GetVirtualScreenInfo();
+
     m_hwnd = CreateWindowExW(WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_LAYERED,
                             L"SnipXColorPickerWindow", L"",
                             WS_POPUP,
-                            screenX, screenY, screenWidth, screenHeight,
+                            screen.x, screen.y, screen.width, screen.height,
                             NULL, NULL, m_pApp->GetInstance(), this);
     
     SetLayeredWindowAttributes(m_hwnd, 0, 255, LWA_ALPHA);
@@ -102,21 +83,20 @@ void ColorPicker::DestroyPickerWindow()
 void ColorPicker::UpdateColor(POINT pt)
 {
     m_currentPoint = pt;
-    
+
     if (!m_pScreenBitmap)
         return;
-    
-    int screenX = GetSystemMetrics(SM_XVIRTUALSCREEN);
-    int screenY = GetSystemMetrics(SM_YVIRTUALSCREEN);
-    
-    int x = pt.x - screenX;
-    int y = pt.y - screenY;
-    
+
+    // 屏幕坐标 → 虚拟桌面位图像素坐标
+    VirtualScreenInfo screen = GetVirtualScreenInfo();
+    int x = pt.x - screen.x;
+    int y = pt.y - screen.y;
+
     if (x >= 0 && y >= 0 && x < m_pScreenBitmap->GetWidth() && y < m_pScreenBitmap->GetHeight())
     {
         m_pScreenBitmap->GetPixel(x, y, &m_currentColor);
     }
-    
+
     InvalidateRect(m_hwnd, NULL, FALSE);
 }
 
@@ -169,24 +149,10 @@ void ColorPicker::CopyColorToClipboard(int format)
         break;
     }
 
-    
-    // 复制到剪贴板
-    if (OpenClipboard(m_hwnd))
+
+    // 复制当前格式颜色文本到剪贴板
+    if (SetClipboardUnicodeText(m_hwnd, colorText))
     {
-        EmptyClipboard();
-        
-        size_t len = wcslen(colorText);
-        HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, (len + 1) * sizeof(WCHAR));
-        if (hMem)
-        {
-            WCHAR* pMem = (WCHAR*)GlobalLock(hMem);
-            wcscpy_s(pMem, len + 1, colorText);
-            GlobalUnlock(hMem);
-            SetClipboardData(CF_UNICODETEXT, hMem);
-        }
-        
-        CloseClipboard();
-        
         MessageBoxW(m_hwnd, colorText, L"颜色已复制", MB_ICONINFORMATION);
     }
 }
@@ -222,50 +188,18 @@ void ColorPicker::DrawMagnifier(HDC hdc, POINT pt)
 {
     if (!m_pScreenBitmap)
         return;
-    
+
     Graphics graphics(hdc);
-    
-    int screenX = GetSystemMetrics(SM_XVIRTUALSCREEN);
-    int screenY = GetSystemMetrics(SM_YVIRTUALSCREEN);
-    
-    int srcX = pt.x - screenX - MAGNIFIER_ZOOM / 2;
-    int srcY = pt.y - screenY - MAGNIFIER_ZOOM / 2;
-    
-    // 放大镜位置（鼠标右下方）
-    int magX = pt.x - screenX + 20;
-    int magY = pt.y - screenY + 20;
-    
-    // 绘制放大镜背景
-    SolidBrush bgBrush(Color(255, 50, 50, 50));
-    graphics.FillRectangle(&bgBrush, magX, magY, MAGNIFIER_SIZE, MAGNIFIER_SIZE);
-    
-    // 绘制放大内容
-    graphics.DrawImage(m_pScreenBitmap, 
-                      Rect(magX, magY, MAGNIFIER_SIZE, MAGNIFIER_SIZE),
-                      srcX, srcY, MAGNIFIER_ZOOM, MAGNIFIER_ZOOM,
-                      UnitPixel);
-    
-    // 绘制中心十字线
-    Pen crossPen(Color(255, 255, 0, 0), 1);
-    int centerX = magX + MAGNIFIER_SIZE / 2;
-    int centerY = magY + MAGNIFIER_SIZE / 2;
-    graphics.DrawLine(&crossPen, centerX, magY, centerX, magY + MAGNIFIER_SIZE);
-    graphics.DrawLine(&crossPen, magX, centerY, magX + MAGNIFIER_SIZE, centerY);
-    
-    // 绘制边框
-    Pen borderPen(Color(255, 255, 255, 255), 2);
-    graphics.DrawRectangle(&borderPen, magX, magY, MAGNIFIER_SIZE, MAGNIFIER_SIZE);
+    DrawMagnifierOverlay(graphics, m_pScreenBitmap, pt, MAGNIFIER_SIZE, MAGNIFIER_ZOOM);
 }
 
 void ColorPicker::DrawColorInfo(HDC hdc, POINT pt)
 {
     Graphics graphics(hdc);
 
-    int screenX = GetSystemMetrics(SM_XVIRTUALSCREEN);
-    int screenY = GetSystemMetrics(SM_YVIRTUALSCREEN);
-
-    int infoX = pt.x - screenX + 20;
-    int infoY = pt.y - screenY + 180;
+    VirtualScreenInfo screen = GetVirtualScreenInfo();
+    int infoX = pt.x - screen.x + 20;
+    int infoY = pt.y - screen.y + 180;
 
     // 绘制信息背景
     SolidBrush bgBrush(Color(220, 0, 0, 0));
@@ -383,9 +317,11 @@ LRESULT CALLBACK ColorPicker::PickerWndProc(HWND hwnd, UINT msg, WPARAM wParam, 
     {
         if (pThis)
         {
+            // 客户区坐标 + 虚拟桌面原点 → 屏幕坐标
+            VirtualScreenInfo screen = GetVirtualScreenInfo();
             POINT pt;
-            pt.x = GET_X_LPARAM(lParam) + GetSystemMetrics(SM_XVIRTUALSCREEN);
-            pt.y = GET_Y_LPARAM(lParam) + GetSystemMetrics(SM_YVIRTUALSCREEN);
+            pt.x = GET_X_LPARAM(lParam) + screen.x;
+            pt.y = GET_Y_LPARAM(lParam) + screen.y;
             pThis->UpdateColor(pt);
         }
         return 0;

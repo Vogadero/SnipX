@@ -3,6 +3,7 @@
 #include "PinWindow.h"
 #include "SnipX.h"
 #include "Localization.h"
+#include "GdiplusUtils.h"
 #include <algorithm>
 #include <cstdlib>
 #include <cwchar>
@@ -237,16 +238,9 @@ void PinWindow::CopyToClipboard(HWND hwndOwner)
     if (!hBitmap)
         return;
 
-    if (OpenClipboard(hwndOwner))
+    if (SetClipboardBitmap(hwndOwner, hBitmap))
     {
-        EmptyClipboard();
-        SetClipboardData(CF_BITMAP, hBitmap);
-        CloseClipboard();
         MessageBoxW(hwndOwner, L10n(L"已复制贴图到剪贴板！", L"Pinned image copied to clipboard!"), L"SnipX", MB_ICONINFORMATION);
-    }
-    else
-    {
-        DeleteObject(hBitmap);
     }
 }
 

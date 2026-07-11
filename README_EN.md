@@ -132,7 +132,12 @@ For detailed build instructions, see [COMPILE.md](COMPILE.md)
 
 ## 🎯 Roadmap
 
-### v1.1.7 - Docs and Structure Cleanup (Current)
+### v1.1.8 - Shared GDI+ Utilities (Current)
+- ✅ Added GdiplusUtils for encoder, virtual-screen capture, magnifier, and clipboard helpers
+- ✅ Wired ScreenCapture/ScreenRecorder/ColorPicker/Editor/PinWindow to the shared helpers
+- ✅ Reused HitTestBottomBar for bottom-bar hover hit testing
+
+### v1.1.7 - Docs and Structure Cleanup
 - ✅ Added JSDoc-style API docs across core modules
 - ✅ Factored Config INI writes and unified capture selection completion
 - ✅ Aligned bottom-bar hover/tooltip with six actions
@@ -261,4 +266,4 @@ If you like SnipX, please give it a star! ⭐
 
 **Made with ❤️ by SnipX Team**
 
-**Last Updated**: 2026-07-11
+**Last Updated**: 2026-07-12

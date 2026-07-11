@@ -119,8 +119,8 @@ bool Config::Load()
     std::wstring configPath = GetConfigPath();
     if (configPath.empty())
         return false;
-    
-    // 使用 Windows INI API 读取；缺失项保留默认值
+
+    // 分段读取 INI：缺失项保留构造时默认值，兼容旧配置缺键
     WCHAR buffer[MAX_PATH];
 
     // 热键
